@@ -1,0 +1,115 @@
+{
+ "language":"english",
+ "@language":{
+    "description": "the current language"
+ },
+  "helloWorld":"hello world",
+ "@helloWorld":{
+    "description": "programmer greeting"
+
+ },
+
+ "requestARide":"Request a ride",
+
+  "nearestOnlineDrivers": "Nearest online drivers",
+  "noNearestOnlineDriver": "No Nearest Online Driver",
+  "pickUpLocation": "Pick up location",
+  "pleaseEnterYourPrice": "Please enter your price!",
+  "price": "Price",
+  "name": "Name",
+  "phone": "Phone",
+  "nowOffline": "Now Offline",
+  "nowOnline": "Now Online",
+  "loginAsAUser" : "Login as a user",
+  "signInWithGoogle": "Sign in with google",
+
+  "signInWithFacebook":"Sign in with facebook",
+
+  "login": "Login",
+
+  "doNotHaveAnAccount" :"Do not have an account? Sign Up here" ,
+
+  "signUp": "Sign up",
+
+  "from": "From",
+
+  "to":"To",
+  "notGettingAddress": "Not getting the Address",
+
+  "whereToGo": "Where to go?",
+  "address":"Address",
+  "yourName" : "Your name",
+  "youEmail": "Your email",
+
+  "history": "History",
+
+  "visitProfile": "Visit profile",
+  "about":"About",
+  "signOut": "Sign out",
+  "tripsHistory" : "Trips history",
+
+  "searchSetDropOffLocation":"Search set Drop off location",
+  "searchHere": "Search here",
+
+  "origin" : "Origin",
+
+  "destination": "Destination",
+
+  "driverIsComing" : "Driver is coming",
+
+  "driverHasArrived": "Driver has arrived",
+
+  "rateDriver" : "Rate Driver",
+
+  "good": "Good",
+
+  "excellent": "Excellent",
+
+  "home" : "Home",
+
+  "profile": "Profile",
+
+  "ratings": "Ratings",
+
+  "earning": "Earnings",
+
+  "totalEarnings": "Total Earnings",
+
+  "yourEarnings" : "Your Earnings",
+
+  "tripsCompleted": "Trips Completed",
+
+  "logout": "Logout",
+
+  "goodDriver": "Good Driver",
+
+  "badDriver": "Bad driver",
+
+  "excellentDriver": "Excellent Driver",
+
+  "user" : "User",
+
+  "driver": "Driver",
+
+  "waitingForResponseFromDriver": "Waiting for Response from Driver",
+  "pleaseWait": "Please wait...",
+  "callDriver": "Call Driver",
+  "submit": "submit",
+  "veryGood": "very good",
+  "veryBad": "very bad",
+  "rateTripExperience": "rate trip experience",
+  "youCancelledTheRideRequest": "you have cancelled the ride request",
+  "thisIsTheTotalTripFareAmountPleasePayToDriver": "This is the total trip fare amount, Please Pay it to the driver",
+  "payCash": "Pay Cash",
+  "settingDropOffPleaseWait": "Setting Up Drof-Off Please wait",
+  "processingPleaseWait": "processing please wait",
+  "error": "error",
+  "loginSuccessful":"login successful",
+  "noRecordExistsWithRecord": "no record exists with this record",
+  "errorOcuredDuringLogin": "error occurred during login",
+  "accountHasBeenCreated": "Account has been Created",
+  "registerAsAuser": "register as a user",
+  "createAccount": "create account",
+  "alreadyHaveAnAccountLoginHere": "already have an account login here"
+
+}

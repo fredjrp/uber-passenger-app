@@ -1,0 +1,110 @@
+{
+ "language":"Deutsch",
+ "helloWorld":"hello welt",
+ "requestARide": "Ein fahrt bestellen",
+ "nearestOnlineDrivers": "Online fahrer in der Nahe",
+ "noNearestOnlineDriver": "Kein Online fahrer in der Nahe",
+ "pickUpLocation": "Ein fahrt bestellen",
+ "pleaseEnterYourPrice": "Bitte geben sie lhren preis ein",
+ "price": "Preis",
+ "name": "Name",
+ "phone": "Telefon",
+ "nowOffline": "Jetzt offline",
+ "nowOnline": "Jetzt online",
+ "loginAsAUser" : "Anmeldung als Benutzer",
+ "signInWithGoogle": "Mit Google anmelden",
+
+ "signInWithFacebook":"Mit Facebook anmelden",
+
+ "login": "Anmeldung",
+
+ "doNotHaveAnAccount" :"Sie haben noch kein Konto" ,
+
+ "signUp": "Registrieren",
+
+ "from": "Von",
+
+ "to":"Nach",
+ "notGettingAddress": "Keine Adresse vorhanden",
+
+ "whereToGo": "Wohin soll ich gehen?",
+ "address":"Adresse",
+ "yourName" : "Ihr Name",
+ "youEmail": "Ihre E-Mail",
+
+ "history": "Geschichte",
+
+ "visitProfile": "Profil besuchen",
+ "about":"Über",
+ "signOut": "Abmeldung",
+ "tripsHistory" : "Verlauf der Fahrten",
+
+ "searchSetDropOffLocation":"Suche nach dem Abfahrtsort",
+ "searchHere": "Hier suchen",
+
+ "origin" : "Herkunft",
+
+ "destination": "Ziel",
+
+ "driverIsComing" : "Fahrer kommt",
+
+ "driverHasArrived": "Fahrer ist angekommen",
+
+ "rateDriver" : "Fahrer bewerten",
+
+ "good": "Gut",
+
+ "excellent": "Ausgezeichnet",
+
+ "home" : "Startseite",
+
+ "profile": "Profil",
+
+ "ratings": "Bewertungen",
+
+ "earning": "Verdienst",
+
+ "totalEarnings": "Gesamter Verdienst",
+
+ "yourEarnings" : "Ihr Verdienst",
+
+ "tripsCompleted": "Abgeschlossene Fahrten",
+
+ "logout": "Abmeldung",
+
+ "goodDriver": "Guter Fahrer",
+
+ "badDriver": "Schlechter Fahrer",
+
+ "excellentDriver": "Ausgezeichneter Fahrer",
+
+ "user" : "Benutzer",
+
+ "driver": "Fahrer",
+
+  "waitingForResponseFromDriver": "Ich warte auf Antwort vom Fahrer",
+  "pleaseWait": "Bitte warten...",
+  "callDriver": "Fahrer anrufen",
+  "submit": "einreichen",
+  "veryGood": "sehr gut",
+  "veryBad": "sehr schlecht",
+  "rateTripExperience": "Fahrerlebnis bewerten",
+  "youCancelledTheRideRequest": "Sie haben den Fahrtwunsch storniert",
+  "thisIsTheTotalTripFareAmountPleasePayToDriver": "Dies ist der Gesamtbetrag der Fahrt, bitte zahlen Sie ihn an den Fahrer",
+  "payCash": "Bar bezahlen",
+  "settingDropOffPleaseWait": "Übergabe einrichten Bitte warten",
+  "processingPleaseWait": "Bearbeitung bitte warten",
+  "error": "Fehler",
+  "loginSuccessful":"Anmeldung erfolgreich",
+  "noRecordExistsWithRecord": "kein Datensatz zu diesem Datensatz vorhanden",
+  "errorOcuredDuringLogin": "Fehler bei der Anmeldung aufgetreten",
+  "accountHasBeenCreated": "Konto wurde erstellt",
+  "registerAsAuser": "als Benutzer registrieren",
+  "createAccount": "Konto erstellen",
+  "alreadyHaveAnAccountLoginHere": "Sie Haben bereit ein Konto Dan anmelden"
+
+
+
+
+
+}
