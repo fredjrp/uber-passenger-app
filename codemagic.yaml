@@ -24,14 +24,13 @@ workflows:
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
       - name: Force Modern Dependencies
         script: |
-          # This handles the 'intl' and other library version clashes
           flutter pub upgrade --major-versions
       - name: Flutter Clean
         script: |
           flutter clean
       - name: Build Android APK
         script: |
-          # Build without the legacy null-safety flag
+          # The modernized Kotlin and Gradle setup is now ready
           flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
