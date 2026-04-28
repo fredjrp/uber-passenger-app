@@ -11,51 +11,34 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Stripe.publishableKey = 'pk_live_qV2DodGhWrZjQkLAfIFZgVua00W3sjPldP'; //
-  Stripe.merchantIdentifier = 'any string works';
-  Stripe.instance.applySettings();
-  await Firebase.initializeApp();
+  
+  // Initialize Stripe
   Stripe.publishableKey = stripePublishKey;
+  Stripe.merchantIdentifier = 'merchant.com.fredjrp.uberpassenger';
+  await Stripe.instance.applySettings();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
   runApp(
-    ChangeNotifierProvider(
-      create: (BuildContext context) {
-        return AppInfoHandler();
-      },
-      child: MyApp(
-        child: Consumer<AppInfoHandler>(
-          builder: (context, appState, child) => MaterialApp(
-            locale: Provider.of<AppInfoHandler>(context).locale,
-            supportedLocales: L10n.all,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate
-            ],
-            title: 'Drivers App',
-            theme: ThemeData(
-              primarySwatch: Colors.orange,
-            ),
-            home: const MySplashScreen(),
-            debugShowCheckedModeBanner: false,
-          ),
-        ),
-      ),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppInfoHandler()),
+      ],
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatefulWidget {
-  final Widget? child;
-
-  MyApp({this.child});
+  const MyApp({super.key});
 
   static void restartApp(BuildContext context) {
-    context.findAncestorStateOfType<_MyAppState>()!.restartApp();
+    context.findAncestorStateOfType<_MyAppState>()?.restartApp();
   }
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -71,7 +54,26 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return KeyedSubtree(
       key: key,
-      child: widget.child!,
+      child: Consumer<AppInfoHandler>(
+        builder: (context, appInfo, _) => MaterialApp(
+          locale: appInfo.locale,
+          supportedLocales: L10n.all,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate
+          ],
+          title: 'Uber Passenger',
+          theme: ThemeData(
+            useMaterial3: false, // Keep existing design
+            primarySwatch: Colors.orange,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: const MySplashScreen(),
+          debugShowCheckedModeBanner: false,
+        ),
+      ),
     );
   }
 }

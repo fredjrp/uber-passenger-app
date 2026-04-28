@@ -1,32 +1,34 @@
 import 'package:firebase_database/firebase_database.dart';
 
-class TripsHistoryModel
-{
-  String? time;
-  String? originAddress;
-  String? destinationAddress;
-  String? status;
-  String? fareAmount;
-  String? car_details;
-  String? driverName;
+class TripsHistoryModel {
+  final String? time;
+  final String? originAddress;
+  final String? destinationAddress;
+  final String? status;
+  final String? fareAmount;
+  final String? carDetails;
+  final String? driverName;
 
   TripsHistoryModel({
     this.time,
     this.originAddress,
     this.destinationAddress,
     this.status,
-    this.car_details,
+    this.fareAmount,
+    this.carDetails,
     this.driverName,
   });
 
-  TripsHistoryModel.fromSnapshot(DataSnapshot dataSnapshot)
-  {
-    time = (dataSnapshot.value as Map)["time"];
-    originAddress = (dataSnapshot.value as Map)["originAddress"];
-    destinationAddress = (dataSnapshot.value as Map)["destinationAddress"];
-    status = (dataSnapshot.value as Map)["status"];
-    fareAmount = (dataSnapshot.value as Map)["fareAmount"];
-    car_details = (dataSnapshot.value as Map)["car_details"];
-    driverName = (dataSnapshot.value as Map)["driverName"];
+  factory TripsHistoryModel.fromSnapshot(DataSnapshot snapshot) {
+    final data = snapshot.value as Map?;
+    return TripsHistoryModel(
+      time: data?['time'],
+      originAddress: data?['originAddress'],
+      destinationAddress: data?['destinationAddress'],
+      status: data?['status'],
+      fareAmount: data?['fareAmount'],
+      carDetails: data?['car_details'],
+      driverName: data?['driverName'],
+    );
   }
 }

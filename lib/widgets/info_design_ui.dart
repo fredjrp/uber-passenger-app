@@ -1,39 +1,29 @@
 import 'package:flutter/material.dart';
 
+class InfoDesignUIWidget extends StatelessWidget {
+  final String? textInfo;
+  final IconData? iconData;
 
-class InfoDesignUIWidget extends StatefulWidget
-{
-  String? textInfo;
-  IconData? iconData;
-
-  InfoDesignUIWidget({this.textInfo, this.iconData});
+  const InfoDesignUIWidget({super.key, this.textInfo, this.iconData});
 
   @override
-  State<InfoDesignUIWidget> createState() => _InfoDesignUIWidgetState();
-}
-
-
-
-
-class _InfoDesignUIWidgetState extends State<InfoDesignUIWidget>
-{
-  @override
-  Widget build(BuildContext context)
-  {
+  Widget build(BuildContext context) {
     return Card(
-      color: Colors.white54,
-      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      color: Colors.white10,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
       child: ListTile(
         leading: Icon(
-          widget.iconData,
-          color: Colors.black,
+          iconData,
+          color: Colors.white70,
         ),
         title: Text(
-          widget.textInfo!,
+          textInfo ?? "",
           style: const TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),

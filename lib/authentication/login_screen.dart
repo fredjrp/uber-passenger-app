@@ -11,77 +11,92 @@ import '../splashScreen/splash_screen.dart';
 import '../widgets/progress_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController emailTextEditingController = TextEditingController();
-  TextEditingController passwordTextEditingController = TextEditingController();
+  final TextEditingController emailTextEditingController = TextEditingController();
+  final TextEditingController passwordTextEditingController = TextEditingController();
 
-  validateForm() {
-    if (!emailTextEditingController.text.contains("@")) {
-      Fluttertoast.showToast(msg: "Email address is not Valid.");
-    } else if (passwordTextEditingController.text.isEmpty) {
-      Fluttertoast.showToast(msg: "Password is required.");
+  Future<void> validateForm() async {
+    final email = emailTextEditingController.text.trim();
+    final password = passwordTextEditingController.text.trim();
+
+    if (!email.contains('@')) {
+      Fluttertoast.showToast(msg: 'Email address is not Valid.');
+    } else if (password.isEmpty) {
+      Fluttertoast.showToast(msg: 'Password is required.');
     } else {
-      loginUserNow();
+      await loginUserNow();
     }
   }
 
-  loginUserNow() async {
+  Future<void> loginUserNow() async {
+    final localizations = AppLocalizations.of(context)!;
+    
     showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext c) {
-          return ProgressDialog(
-            message: AppLocalizations.of(context)!.processingPleaseWait,
-          );
-        });
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext c) => ProgressDialog(
+        message: localizations.processingPleaseWait,
+      ),
+    );
 
-    final User? firebaseUser = (await fAuth
-            .signInWithEmailAndPassword(
-      email: emailTextEditingController.text.trim(),
-      password: passwordTextEditingController.text.trim(),
-    )
-            .catchError((msg) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(
-          msg: AppLocalizations.of(context)!.error + msg.toString());
-    }))
-        .user;
-
-    if (firebaseUser != null) {
-      DatabaseReference driversRef =
-          FirebaseDatabase.instance.ref().child("users");
-      driversRef.child(firebaseUser.uid).once().then((driverKey) {
-        final snap = driverKey.snapshot;
-        if (snap.value != null) {
-          currentFirebaseUser = firebaseUser;
-          Fluttertoast.showToast(
-            msg: AppLocalizations.of(context)!.loginSuccessful,
-          );
-          Navigator.push(context,
-              MaterialPageRoute(builder: (c) => const MySplashScreen()));
-        } else {
-          Fluttertoast.showToast(
-            msg: AppLocalizations.of(context)!.noRecordExistsWithRecord,
-          );
-          fAuth.signOut();
-          Navigator.push(context,
-              MaterialPageRoute(builder: (c) => const MySplashScreen()));
-        }
-      });
-    } else {
-      Navigator.pop(context);
-      Fluttertoast.showToast(
-        msg: AppLocalizations.of(context)!.errorOcuredDuringLogin,
+    try {
+      final UserCredential userCredential = await fAuth.signInWithEmailAndPassword(
+        email: emailTextEditingController.text.trim(),
+        password: passwordTextEditingController.text.trim(),
       );
+
+      final User? firebaseUser = userCredential.user;
+
+      if (firebaseUser != null) {
+        final DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users');
+        final DatabaseEvent event = await userRef.child(firebaseUser.uid).once();
+        
+        if (!mounted) return;
+
+        if (event.snapshot.value != null) {
+          currentFirebaseUser = firebaseUser;
+          Fluttertoast.showToast(msg: localizations.loginSuccessful);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (c) => const MySplashScreen()),
+            (route) => false,
+          );
+        } else {
+          Fluttertoast.showToast(msg: localizations.noRecordExistsWithRecord);
+          await fAuth.signOut();
+          Navigator.pop(context); // Remove progress dialog
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Remove progress dialog
+        Fluttertoast.showToast(msg: '${localizations.error}: ${e.message}');
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Remove progress dialog
+        Fluttertoast.showToast(msg: '${localizations.error}: ${e.toString()}');
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    emailTextEditingController.dispose();
+    passwordTextEditingController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SingleChildScrollView(
@@ -89,19 +104,15 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              const SizedBox(
-                height: 30,
-              ),
+              const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset("assets/images/driver.png"),
+                child: Image.asset('assets/images/driver.png'),
               ),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               Text(
-                AppLocalizations.of(context)!.loginAsAUser,
-                style: TextStyle(
+                localizations.loginAsAUser,
+                style: const TextStyle(
                   fontSize: 26,
                   color: Colors.grey,
                   fontWeight: FontWeight.bold,
@@ -112,21 +123,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.grey),
                 decoration: const InputDecoration(
-                  labelText: "Email",
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  hintStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 10,
-                  ),
-                  labelStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  labelText: 'Email',
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                  labelStyle: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
               TextField(
@@ -135,111 +136,76 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: true,
                 style: const TextStyle(color: Colors.grey),
                 decoration: const InputDecoration(
-                  labelText: "Password",
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  hintStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 10,
-                  ),
-                  labelStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  labelText: 'Password',
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                  hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                  labelStyle: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: () {
-                  validateForm();
-                },
+                onPressed: validateForm,
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.lightGreenAccent,
+                  backgroundColor: Colors.lightGreenAccent,
+                  foregroundColor: Colors.black,
                 ),
                 child: Text(
-                  AppLocalizations.of(context)!.login,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                  ),
+                  localizations.login,
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  FirebaseAuthMethods(auth: FirebaseAuth.instance)
-                      .signInWithGoogle(context: context);
+                  FirebaseAuthMethods(fAuth).signInWithGoogle(context: context);
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.lightGreenAccent,
+                  backgroundColor: Colors.lightGreenAccent,
+                  foregroundColor: Colors.black,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Spacer(),
+                    const Spacer(),
                     Text(
-                      AppLocalizations.of(context)!.signInWithGoogle,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                      ),
+                      localizations.signInWithGoogle,
+                      style: const TextStyle(fontSize: 18),
                     ),
-                    Spacer(),
-                    Image.asset(
-                      "assets/images/googleIcon.png",
-                      height: 30,
-                      width: 30,
-                    )
+                    const Spacer(),
+                    Image.asset('assets/images/googleIcon.png', height: 30, width: 30),
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  FirebaseAuthMethods(auth: FirebaseAuth.instance)
-                      .signInWithFacebook(context: context);
+                  FirebaseAuthMethods(fAuth).signInWithFacebook(context: context);
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.lightGreenAccent,
+                  backgroundColor: Colors.lightGreenAccent,
+                  foregroundColor: Colors.black,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Spacer(),
+                    const Spacer(),
                     Text(
-                      AppLocalizations.of(context)!.signInWithFacebook,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                      ),
+                      localizations.signInWithFacebook,
+                      style: const TextStyle(fontSize: 18),
                     ),
-                    Spacer(),
-                    Image.asset(
-                      "assets/images/facebookIcon.png",
-                      height: 30,
-                      width: 30,
-                    )
+                    const Spacer(),
+                    Image.asset('assets/images/facebookIcon.png', height: 30, width: 30),
                   ],
                 ),
               ),
               TextButton(
                 child: Text(
-                  AppLocalizations.of(context)!.doNotHaveAnAccount,
-                  style: TextStyle(color: Colors.grey),
+                  localizations.doNotHaveAnAccount,
+                  style: const TextStyle(color: Colors.grey),
                 ),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (c) => SignUpScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (c) => const SignUpScreen()));
                 },
               ),
             ],

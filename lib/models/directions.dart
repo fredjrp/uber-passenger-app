@@ -1,10 +1,9 @@
-class Directions
-{
-  String? humanReadableAddress;
-  String? locationName;
-  String? locationId;
-  double? locationLatitude;
-  double? locationLongitude;
+class Directions {
+  final String? humanReadableAddress;
+  final String? locationName;
+  final String? locationId;
+  final double? locationLatitude;
+  final double? locationLongitude;
 
   Directions({
     this.humanReadableAddress,

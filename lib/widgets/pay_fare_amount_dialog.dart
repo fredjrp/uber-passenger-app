@@ -2,214 +2,153 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import '../global/global.dart';
 
 class PayFareAmountDialog extends StatefulWidget {
-  double? price;
+  final double? price;
 
-  PayFareAmountDialog({this.price});
+  const PayFareAmountDialog({super.key, this.price});
 
   @override
   State<PayFareAmountDialog> createState() => _PayFareAmountDialogState();
 }
 
 class _PayFareAmountDialogState extends State<PayFareAmountDialog> {
+  
+  Future<void> initPayment({required String email, required double amount, required BuildContext context}) async {
+    try {
+      // 1. Create a payment intent on the server
+      final response = await http.post(
+        Uri.parse('https://us-central1-uber-clone-fab67.cloudfunctions.net/stripePaymentIntentRequest'),
+        body: {
+          'email': email,
+          'amount': (amount * 100).toInt().toString(), // Convert to cents
+        },
+      );
+
+      final jsonResponse = jsonDecode(response.body);
+      log(jsonResponse.toString());
+
+      // 2. Initialize the payment sheet
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: jsonResponse['paymentIntent'],
+          merchantDisplayName: 'Uber Passenger App',
+          customerId: jsonResponse['customer'],
+          customerEphemeralKeySecret: jsonResponse['ephemeralKey'],
+          applePay: const PaymentSheetApplePay(merchantCountryCode: 'US'),
+          googlePay: const PaymentSheetGooglePay(merchantCountryCode: 'US', testEnv: true),
+          style: ThemeMode.dark,
+          appearance: const PaymentSheetAppearance(
+            colors: PaymentSheetAppearanceColors(
+              primary: Colors.green,
+            ),
+          ),
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payment is successful')),
+      );
+      Navigator.pop(context, "cashPayed"); // Assuming success logic
+    } catch (e) {
+      if (!mounted) return;
+      if (e is StripeException) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.error.localizedMessage}')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      backgroundColor: Colors.grey,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
       child: Container(
-        margin: const EdgeInsets.all(6),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.black87,
-          borderRadius: BorderRadius.circular(6),
-        ),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
-              height: 20,
-            ),
             Text(
-              AppLocalizations.of(context)!.price.toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              localizations.price.toUpperCase(),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 16),
             ),
-            const SizedBox(
-              height: 20,
-            ),
-            const Divider(
-              thickness: 4,
-              color: Colors.grey,
-            ),
-            const SizedBox(
-              height: 16,
-            ),
+            const SizedBox(height: 10),
+            const Divider(),
+            const SizedBox(height: 20),
             Text(
-              widget.price.toString(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                fontSize: 50,
+              "\$${widget.price}",
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 50),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              localizations.thisIsTheTotalTripFareAmountPleasePayToDriver,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.black54, fontSize: 14),
+            ),
+            const SizedBox(height: 30),
+            
+            // Pay with Card
+            ElevatedButton(
+              onPressed: () => initPayment(
+                amount: widget.price ?? 0,
+                context: context,
+                email: userModelCurrentInfo?.email ?? "test@example.com",
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Pay with Card", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("\$${widget.price}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                AppLocalizations.of(context)!
-                    .thisIsTheTotalTripFareAmountPleasePayToDriver,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+            
+            const SizedBox(height: 15),
+
+            // Pay Cash
+            ElevatedButton(
+              onPressed: () {
+                Future.delayed(const Duration(milliseconds: 1000), () {
+                  if (mounted) Navigator.pop(context, "cashPayed");
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.green,
-                ),
-                onPressed: () async {
-                  await initPayment(
-                      amount: 80 * 100,
-                      context: context,
-                      email: "najam@gmail.com");
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Pay with Card",
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "\$  " + widget.price!.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Pay Cash", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("\$${widget.price}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.green,
-                ),
-                onPressed: () {
-                  Future.delayed(const Duration(milliseconds: 2000), () {
-                    Navigator.pop(context, "cashPayed");
-                  });
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Pay Cash",
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "\$  " + widget.price!.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 4,
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> initPayment(
-      {required String email,
-      required double amount,
-      required BuildContext context}) async {
-    try {
-      // 1. Create a payment intent on the server
-      final response = await http.post(
-          Uri.parse(
-              'https://us-central1-uber-clone-fab67.cloudfunctions.net/stripePaymentIntentRequest'),
-          body: {
-            'email': email,
-            'amount': amount.toString(),
-          });
-
-      final jsonResponse = jsonDecode(response.body);
-      log(jsonResponse.toString());
-      // 2. Initialize the payment sheet
-      await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-        paymentIntentClientSecret: jsonResponse['paymentIntent'],
-        merchantDisplayName: 'TAXI APP',
-        customerId: jsonResponse['customer'],
-        customerEphemeralKeySecret: jsonResponse['ephemeralKey'],
-        //testEnv: true,
-        currencyCode: "+1",
-        applePay: true,
-        googlePay: true,
-        merchantCountryCode: 'US',
-      ));
-
-      await Stripe.instance.presentPaymentSheet();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment is successful'),
-        ),
-      );
-    } catch (errorr) {
-      if (errorr is StripeException) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occured ${errorr.error.localizedMessage}'),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('An error occured $errorr'),
-          ),
-        );
-      }
-    }
   }
 }

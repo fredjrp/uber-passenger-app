@@ -1,96 +1,87 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+class AboutScreen extends StatefulWidget {
+  const AboutScreen({super.key});
 
-class AboutScreen extends StatefulWidget
-{
   @override
   State<AboutScreen> createState() => _AboutScreenState();
 }
 
-
-
-
-class _AboutScreenState extends State<AboutScreen>
-{
+class _AboutScreenState extends State<AboutScreen> {
   @override
-  Widget build(BuildContext context)
-  {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: ListView(
-
-        children: [
-
-          //image
-           Container(
-            height: 230,
-            child: Center(
-              child: Image.asset(
-                "assets/images/car_logo.png",
-                width: 260,
-              ),
-            ),
-          ),
-
-          Column(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
             children: [
+              const SizedBox(height: 20),
+              
+              // Image
+              Center(
+                child: Image.asset(
+                  "assets/images/car_logo.png",
+                  width: 260,
+                ),
+              ),
 
-              //company name
+              const SizedBox(height: 40),
+
+              // Company Name
               const Text(
-                "Uber & inDriver Clone",
+                "Uber Passenger App",
                 style: TextStyle(
-                  fontSize: 28,
-                  color: Colors.white54,
+                  fontSize: 32,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
 
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 30),
 
-              //about you & your company - write some info
+              // App Info
               const Text(
-                "This app has been developed by Muhammad Noman karimi, "
-                "This is the world number 1 ride sharing app. Available for all. "
-                "For more app contact me in what\'sup: +93787343574 or email: noman343574@gmail.com",
+                "Modernized Uber Passenger application with improved performance, stability, and real-time tracking. "
+                "Built with Flutter for a seamless experience.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white54,
+                  fontSize: 18,
+                  color: Colors.white70,
+                  height: 1.5,
                 ),
               ),
 
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 50),
 
-
-              const SizedBox(
-                height: 40,
-              ),
-
-              //close
+              // Close Button
               ElevatedButton(
-                onPressed: ()
-                {
-                  SystemNavigator.pop();
-                },
+                onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.white54,
+                  backgroundColor: Colors.white24,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(200, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text(
-                  "Close",
-                  style: TextStyle(color: Colors.white),
+                  "Back",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-
+              
+              const SizedBox(height: 40),
             ],
           ),
-
-        ],
-
+        ),
       ),
     );
   }

@@ -1,21 +1,18 @@
-
 import '../models/active_nearby_available_drivers.dart';
 
-class GeoFireAssistant
-{
+class GeoFireAssistant {
   static List<ActiveNearbyAvailableDrivers> activeNearbyAvailableDriversList = [];
 
-  static void deleteOfflineDriverFromList(String driverId)
-  {
-    int indexNumber = activeNearbyAvailableDriversList.indexWhere((element) => element.driverId == driverId);
-    activeNearbyAvailableDriversList.removeAt(indexNumber);
+  static void deleteOfflineDriverFromList(String driverId) {
+    activeNearbyAvailableDriversList.removeWhere((element) => element.driverId == driverId);
   }
 
-  static void updateActiveNearbyAvailableDriverLocation(ActiveNearbyAvailableDrivers driverWhoMove)
-  {
-    int indexNumber = activeNearbyAvailableDriversList.indexWhere((element) => element.driverId == driverWhoMove.driverId);
+  static void updateActiveNearbyAvailableDriverLocation(ActiveNearbyAvailableDrivers driverWhoMove) {
+    final int index = activeNearbyAvailableDriversList.indexWhere((element) => element.driverId == driverWhoMove.driverId);
 
-    activeNearbyAvailableDriversList[indexNumber].locationLatitude = driverWhoMove.locationLatitude;
-    activeNearbyAvailableDriversList[indexNumber].locationLongitude = driverWhoMove.locationLongitude;
+    if (index != -1) {
+      activeNearbyAvailableDriversList[index].locationLatitude = driverWhoMove.locationLatitude;
+      activeNearbyAvailableDriversList[index].locationLongitude = driverWhoMove.locationLongitude;
+    }
   }
 }

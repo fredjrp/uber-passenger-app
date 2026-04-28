@@ -1,5 +1,4 @@
-class ActiveNearbyAvailableDrivers
-{
+class ActiveNearbyAvailableDrivers {
   String? driverId;
   double? locationLatitude;
   double? locationLongitude;

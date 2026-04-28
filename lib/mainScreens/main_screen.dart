@@ -1,17 +1,13 @@
 import 'dart:async';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:uber_user/main.dart';
-import 'package:uber_user/mainScreens/payment_screen.dart';
 import 'package:uber_user/mainScreens/rate_driver_screen.dart';
 import 'package:uber_user/mainScreens/search_places_screen.dart';
 import 'package:uber_user/mainScreens/select_nearest_active_driver_screen.dart';
@@ -27,13 +23,14 @@ import '../widgets/pay_fare_amount_dialog.dart';
 import '../widgets/progress_dialog.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  TextEditingController txtPrice = TextEditingController();
-
+  final TextEditingController txtPrice = TextEditingController();
   final Completer<GoogleMapController> _controllerGoogleMap = Completer();
   GoogleMapController? newGoogleMapController;
 
@@ -42,19 +39,16 @@ class _MainScreenState extends State<MainScreen> {
     zoom: 14.4746,
   );
 
-  GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
   double searchLocationContainerHeight = 265;
   double waitingResponseFromDriverContainerHeight = 0;
   double assignedDriverInfoContainerHeight = 0;
 
   Position? userCurrentPosition;
-  var geoLocator = Geolocator();
-
   double bottomPaddingOfMap = 0;
 
   List<LatLng> pLineCoOrdinatesList = [];
   Set<Polyline> polyLineSet = {};
-
   Set<Marker> markersSet = {};
   Set<Circle> circlesSet = {};
 
@@ -62,205 +56,127 @@ class _MainScreenState extends State<MainScreen> {
   String userEmail = "your Email";
 
   bool openNavigationDrawer = true;
-
   bool activeNearbyDriverKeysLoaded = false;
   BitmapDescriptor? activeNearbyIcon;
 
   List<ActiveNearbyAvailableDrivers> onlineNearByAvailableDriversList = [];
-
   DatabaseReference? referenceRideRequest;
   String driverRideStatus = "Driver is Coming";
   StreamSubscription<DatabaseEvent>? tripRideRequestInfoStreamSubscription;
   String userRideRequestStatus = "";
   bool requestPositionInfo = true;
 
-  blackThemeGoogleMap() {
-    newGoogleMapController!.setMapStyle('''
-                    [
-                      {
-                        "elementType": "geometry",
-                        "stylers": [
-                          {
-                            "color": "#242f3e"
-                          }
-                        ]
-                      },
-                      {
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#746855"
-                          }
-                        ]
-                      },
-                      {
-                        "elementType": "labels.text.stroke",
-                        "stylers": [
-                          {
-                            "color": "#242f3e"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "administrative.locality",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#d59563"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "poi",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#d59563"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "poi.park",
-                        "elementType": "geometry",
-                        "stylers": [
-                          {
-                            "color": "#263c3f"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "poi.park",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#6b9a76"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "road",
-                        "elementType": "geometry",
-                        "stylers": [
-                          {
-                            "color": "#38414e"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "road",
-                        "elementType": "geometry.stroke",
-                        "stylers": [
-                          {
-                            "color": "#212a37"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "road",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#9ca5b3"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "road.highway",
-                        "elementType": "geometry",
-                        "stylers": [
-                          {
-                            "color": "#746855"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "road.highway",
-                        "elementType": "geometry.stroke",
-                        "stylers": [
-                          {
-                            "color": "#1f2835"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "road.highway",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#f3d19c"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "transit",
-                        "elementType": "geometry",
-                        "stylers": [
-                          {
-                            "color": "#2f3948"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "transit.station",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#d59563"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "water",
-                        "elementType": "geometry",
-                        "stylers": [
-                          {
-                            "color": "#17263c"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "water",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                          {
-                            "color": "#515c6d"
-                          }
-                        ]
-                      },
-                      {
-                        "featureType": "water",
-                        "elementType": "labels.text.stroke",
-                        "stylers": [
-                          {
-                            "color": "#17263c"
-                          }
-                        ]
-                      }
-                    ]
-                ''');
+  void blackThemeGoogleMap() {
+    newGoogleMapController?.setMapStyle('''
+[
+  {
+    "elementType": "geometry",
+    "stylers": [{"color": "#242f3e"}]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#746855"}]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [{"color": "#242f3e"}]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#d59563"}]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#d59563"}]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [{"color": "#263c3f"}]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#6b9a76"}]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [{"color": "#38414e"}]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [{"color": "#212a37"}]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#9ca5b3"}]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [{"color": "#746855"}]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [{"color": "#1f2835"}]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#f3d19c"}]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [{"color": "#2f3948"}]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#d59563"}]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [{"color": "#17263c"}]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [{"color": "#515c6d"}]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [{"color": "#17263c"}]
+  }
+]
+    ''');
   }
 
-  locateUserPosition() async {
-    Position cPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    userCurrentPosition = cPosition;
+  Future<void> locateUserPosition() async {
+    final Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    userCurrentPosition = position;
 
-    LatLng latLngPosition =
-        LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
+    final LatLng latLngPosition = LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
+    final CameraPosition cameraPosition = CameraPosition(target: latLngPosition, zoom: 14);
 
-    CameraPosition cameraPosition =
-        CameraPosition(target: latLngPosition, zoom: 14);
+    newGoogleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
-    newGoogleMapController!
-        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-
-    String humanReadableAddress =
-        await AssistantMethods.searchAddressForGeographicCoOrdinates(
-            userCurrentPosition!, context);
-    print("this is your address = " + humanReadableAddress);
-
-    userName = userModelCurrentInfo!.name ?? "network error";
-    userEmail = userModelCurrentInfo!.email ?? "network error";
+    if (!mounted) return;
+    
+    await AssistantMethods.searchAddressForGeographicCoOrdinates(userCurrentPosition!, context);
+    
+    setState(() {
+      userName = userModelCurrentInfo?.name ?? "User";
+      userEmail = userModelCurrentInfo?.email ?? "Email";
+    });
 
     initializeGeoFireListener();
   }
@@ -274,29 +190,31 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  saveRideRequestInformation() {
-    //1. save the RideRequest Information
-    referenceRideRequest =
-        FirebaseDatabase.instance.ref().child("All Ride Requests").push();
+  @override
+  void dispose() {
+    txtPrice.dispose();
+    tripRideRequestInfoStreamSubscription?.cancel();
+    super.dispose();
+  }
 
-    var originLocation =
-        Provider.of<AppInfoHandler>(context, listen: false).userPickUpLocation;
-    var destinationLocation =
-        Provider.of<AppInfoHandler>(context, listen: false).userDropOffLocation;
+  Future<void> saveRideRequestInformation() async {
+    referenceRideRequest = FirebaseDatabase.instance.ref().child("All Ride Requests").push();
 
-    Map originLocationMap = {
-      //"key": value,
+    final appInfo = Provider.of<AppInfoHandler>(context, listen: false);
+    final originLocation = appInfo.userPickUpLocation;
+    final destinationLocation = appInfo.userDropOffLocation;
+
+    final Map originLocationMap = {
       "latitude": originLocation!.locationLatitude.toString(),
       "longitude": originLocation.locationLongitude.toString(),
     };
 
-    Map destinationLocationMap = {
-      //"key": value,
+    final Map destinationLocationMap = {
       "latitude": destinationLocation!.locationLatitude.toString(),
       "longitude": destinationLocation.locationLongitude.toString(),
     };
 
-    Map userInformationMap = {
+    final Map userInformationMap = {
       "origin": originLocationMap,
       "destination": destinationLocationMap,
       "time": DateTime.now().toString(),
@@ -308,96 +226,56 @@ class _MainScreenState extends State<MainScreen> {
       "price": txtPrice.text
     };
 
-    referenceRideRequest!.set(userInformationMap);
+    await referenceRideRequest!.set(userInformationMap);
 
-    tripRideRequestInfoStreamSubscription =
-        referenceRideRequest!.onValue.listen((eventSnap) async {
-      if (eventSnap.snapshot.value == null) {
-        return;
+    tripRideRequestInfoStreamSubscription = referenceRideRequest!.onValue.listen((eventSnap) async {
+      final data = eventSnap.snapshot.value as Map?;
+      if (data == null) return;
+
+      if (data["car_details"] != null) {
+        setState(() => driverCarDetails = data["car_details"].toString());
       }
 
-      if ((eventSnap.snapshot.value as Map)["car_details"] != null) {
-        setState(() {
-          driverCarDetails =
-              (eventSnap.snapshot.value as Map)["car_details"].toString();
-        });
+      if (data["driverPhone"] != null) {
+        setState(() => driverPhone = data["driverPhone"] ?? "");
       }
 
-      if ((eventSnap.snapshot.value as Map)["driverPhone"] != null) {
-        setState(() {
-          driverPhone = (eventSnap.snapshot.value as Map)["driverPhone"] ?? "";
-        });
+      if (data["driverName"] != null) {
+        setState(() => driverName = data["driverName"].toString());
       }
 
-      if ((eventSnap.snapshot.value as Map)["driverName"] != null) {
-        setState(() {
-          driverName =
-              (eventSnap.snapshot.value as Map)["driverName"].toString();
-        });
+      if (data["status"] != null) {
+        userRideRequestStatus = data["status"].toString();
       }
 
-      if ((eventSnap.snapshot.value as Map)["status"] != null) {
-        userRideRequestStatus =
-            (eventSnap.snapshot.value as Map)["status"].toString();
-      }
+      if (data["driverLocation"] != null) {
+        final double driverLat = double.parse(data["driverLocation"]["latitude"].toString());
+        final double driverLng = double.parse(data["driverLocation"]["longitude"].toString());
+        final LatLng driverLatLng = LatLng(driverLat, driverLng);
 
-      if ((eventSnap.snapshot.value as Map)["driverLocation"] != null) {
-        double driverCurrentPositionLat = double.parse(
-            (eventSnap.snapshot.value as Map)["driverLocation"]["latitude"]
-                .toString());
-        double driverCurrentPositionLng = double.parse(
-            (eventSnap.snapshot.value as Map)["driverLocation"]["longitude"]
-                .toString());
-
-        LatLng driverCurrentPositionLatLng =
-            LatLng(driverCurrentPositionLat, driverCurrentPositionLng);
-
-        //status = accepted
         if (userRideRequestStatus == "accepted") {
-          updateArrivalTimeToUserPickupLocation(driverCurrentPositionLatLng);
-        }
-
-        //status = arrived
-        if (userRideRequestStatus == "arrived") {
-          setState(() {
-            driverRideStatus = "Driver has Arrived";
-          });
-        }
-
-        //status = ontrip
-        if (userRideRequestStatus == "ontrip") {
-          updateReachingTimeToUserDropOffLocation(driverCurrentPositionLatLng);
-        }
-
-        //status = ended
-        if (userRideRequestStatus == "ended") {
-          if ((eventSnap.snapshot.value as Map)["price"] != null) {
-            double price = double.parse(
-                (eventSnap.snapshot.value as Map)["price"].toString());
-
-            var response = await showDialog(
+          updateArrivalTimeToUserPickupLocation(driverLatLng);
+        } else if (userRideRequestStatus == "arrived") {
+          setState(() => driverRideStatus = "Driver has Arrived");
+        } else if (userRideRequestStatus == "ontrip") {
+          updateReachingTimeToUserDropOffLocation(driverLatLng);
+        } else if (userRideRequestStatus == "ended") {
+          if (data["price"] != null) {
+            final double price = double.parse(data["price"].toString());
+            if (!mounted) return;
+            final response = await showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (BuildContext c) => PayFareAmountDialog(
-                price: price,
-              ),
+              builder: (BuildContext c) => PayFareAmountDialog(price: price),
             );
 
             if (response == "cashPayed") {
-              //user can rate the driver now
-              if ((eventSnap.snapshot.value as Map)["driverId"] != null) {
-                String assignedDriverId =
-                    (eventSnap.snapshot.value as Map)["driverId"].toString();
-
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (c) => RateDriverScreen(
-                              assignedDriverId: assignedDriverId,
-                            )));
-
+              if (data["driverId"] != null) {
+                final String assignedDriverId = data["driverId"].toString();
+                if (!mounted) return;
+                Navigator.push(context, MaterialPageRoute(builder: (c) => RateDriverScreen(assignedDriverId: assignedDriverId)));
                 referenceRideRequest!.onDisconnect();
-                tripRideRequestInfoStreamSubscription!.cancel();
+                tripRideRequestInfoStreamSubscription?.cancel();
               }
             }
           }
@@ -405,74 +283,45 @@ class _MainScreenState extends State<MainScreen> {
       }
     });
 
-    onlineNearByAvailableDriversList =
-        GeoFireAssistant.activeNearbyAvailableDriversList;
+    onlineNearByAvailableDriversList = GeoFireAssistant.activeNearbyAvailableDriversList;
     searchNearestOnlineDrivers();
   }
 
-  updateArrivalTimeToUserPickupLocation(driverCurrentPositionLatLng) async {
-    if (requestPositionInfo == true) {
-      requestPositionInfo = false;
+  Future<void> updateArrivalTimeToUserPickupLocation(LatLng driverLatLng) async {
+    if (!requestPositionInfo) return;
+    requestPositionInfo = false;
 
-      LatLng userPickUpPosition =
-          LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
+    final LatLng userPickUpPosition = LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
+    final directionDetailsInfo = await AssistantMethods.obtainOriginToDestinationDirectionDetails(driverLatLng, userPickUpPosition);
 
-      var directionDetailsInfo =
-          await AssistantMethods.obtainOriginToDestinationDirectionDetails(
-        driverCurrentPositionLatLng,
-        userPickUpPosition,
-      );
-
-      if (directionDetailsInfo == null) {
-        return;
-      }
-
+    if (directionDetailsInfo != null && mounted) {
       setState(() {
-        driverRideStatus = AppLocalizations.of(context)!.driverIsComing +
-            ":: " +
-            directionDetailsInfo.duration_text.toString();
+        driverRideStatus = "${AppLocalizations.of(context)!.driverIsComing} :: ${directionDetailsInfo.durationText}";
       });
-
-      requestPositionInfo = true;
     }
+    requestPositionInfo = true;
   }
 
-  updateReachingTimeToUserDropOffLocation(driverCurrentPositionLatLng) async {
-    if (requestPositionInfo == true) {
-      requestPositionInfo = false;
+  Future<void> updateReachingTimeToUserDropOffLocation(LatLng driverLatLng) async {
+    if (!requestPositionInfo) return;
+    requestPositionInfo = false;
 
-      var dropOffLocation = Provider.of<AppInfoHandler>(context, listen: false)
-          .userDropOffLocation;
+    final dropOffLocation = Provider.of<AppInfoHandler>(context, listen: false).userDropOffLocation;
+    final LatLng destinationPosition = LatLng(dropOffLocation!.locationLatitude!, dropOffLocation.locationLongitude!);
 
-      LatLng userDestinationPosition = LatLng(
-          dropOffLocation!.locationLatitude!,
-          dropOffLocation.locationLongitude!);
+    final directionDetailsInfo = await AssistantMethods.obtainOriginToDestinationDirectionDetails(driverLatLng, destinationPosition);
 
-      var directionDetailsInfo =
-          await AssistantMethods.obtainOriginToDestinationDirectionDetails(
-        driverCurrentPositionLatLng,
-        userDestinationPosition,
-      );
-
-      if (directionDetailsInfo == null) {
-        return;
-      }
-
+    if (directionDetailsInfo != null && mounted) {
       setState(() {
-        driverRideStatus = "Going towards Destination :: " +
-            directionDetailsInfo.duration_text.toString();
+        driverRideStatus = "Going towards Destination :: ${directionDetailsInfo.durationText}";
       });
-
-      requestPositionInfo = true;
     }
+    requestPositionInfo = true;
   }
 
-  searchNearestOnlineDrivers() async {
-    //no active driver available
-    if (onlineNearByAvailableDriversList.length == 0) {
-      //cancel/delete the RideRequest Information
-      referenceRideRequest!.remove();
-
+  Future<void> searchNearestOnlineDrivers() async {
+    if (onlineNearByAvailableDriversList.isEmpty) {
+      await referenceRideRequest!.remove();
       setState(() {
         polyLineSet.clear();
         markersSet.clear();
@@ -480,79 +329,47 @@ class _MainScreenState extends State<MainScreen> {
         pLineCoOrdinatesList.clear();
       });
 
-      Fluttertoast.showToast(
-          msg:
-              "No Online Nearest Driver Available. Search Again after some time, Restarting App Now.");
-
+      Fluttertoast.showToast(msg: "No drivers available. Search again later.");
       Future.delayed(const Duration(milliseconds: 4000), () {
-        MyApp.restartApp(context);
+        if (mounted) MyApp.restartApp(context);
       });
-
       return;
     }
 
-    //active driver available
     await retrieveOnlineDriversInformation(onlineNearByAvailableDriversList);
-
-    var response = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (c) => SelectNearestActiveDriversScreen(
-                  referenceRideRequest: referenceRideRequest,
-                  price: txtPrice.text,
-                )));
+    if (!mounted) return;
+    
+    final response = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (c) => SelectNearestActiveDriversScreen(
+        referenceRideRequest: referenceRideRequest,
+        price: txtPrice.text,
+      )),
+    );
 
     if (response == "driverChoosed") {
-      FirebaseDatabase.instance
-          .ref()
-          .child("drivers")
-          .child(chosenDriverId!)
-          .once()
-          .then((snap) {
-        if (snap.snapshot.value != null) {
-          //send notification to that specific driver
-          sendNotificationToDriverNow(chosenDriverId!);
+      final DatabaseEvent event = await FirebaseDatabase.instance.ref().child("drivers").child(chosenDriverId!).once();
+      if (event.snapshot.value != null) {
+        sendNotificationToDriverNow(chosenDriverId!);
+        showWaitingResponseFromDriverUI();
 
-          //Display Waiting Response UI from a Driver
-          showWaitingResponseFromDriverUI();
-
-          //Response from a Driver
-          FirebaseDatabase.instance
-              .ref()
-              .child("drivers")
-              .child(chosenDriverId!)
-              .child("newRideStatus")
-              .onValue
-              .listen((eventSnapshot) {
-            //1. driver has cancel the rideRequest :: Push Notification
-            // (newRideStatus = idle)
-            if (eventSnapshot.snapshot.value == "idle") {
-              Fluttertoast.showToast(
-                  msg:
-                      "The driver has cancelled your request. Please choose another driver.");
-
-              Future.delayed(const Duration(milliseconds: 3000), () {
-                Fluttertoast.showToast(msg: "Please Restart App Now.");
-
-                MyApp.restartApp(context);
-              });
-            }
-
-            //2. driver has accept the rideRequest :: Push Notification
-            // (newRideStatus = accepted)
-            if (eventSnapshot.snapshot.value == "accepted") {
-              //design and display ui for displaying assigned driver information
-              showUIForAssignedDriverInfo();
-            }
-          });
-        } else {
-          Fluttertoast.showToast(msg: "This driver do not exist. Try again.");
-        }
-      });
+        FirebaseDatabase.instance.ref().child("drivers").child(chosenDriverId!).child("newRideStatus").onValue.listen((eventSnapshot) {
+          if (eventSnapshot.snapshot.value == "idle") {
+            Fluttertoast.showToast(msg: "The driver has cancelled. Please choose another.");
+            Future.delayed(const Duration(milliseconds: 3000), () {
+              if (mounted) MyApp.restartApp(context);
+            });
+          } else if (eventSnapshot.snapshot.value == "accepted") {
+            showUIForAssignedDriverInfo();
+          }
+        });
+      } else {
+        Fluttertoast.showToast(msg: "This driver does not exist. Try again.");
+      }
     }
   }
 
-  showUIForAssignedDriverInfo() {
+  void showUIForAssignedDriverInfo() {
     setState(() {
       waitingResponseFromDriverContainerHeight = 0;
       searchLocationContainerHeight = 0;
@@ -560,88 +377,52 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  showWaitingResponseFromDriverUI() {
+  void showWaitingResponseFromDriverUI() {
     setState(() {
       searchLocationContainerHeight = 0;
       waitingResponseFromDriverContainerHeight = 220;
     });
   }
 
-  sendNotificationToDriverNow(String chosenDriverId) {
-    //assign/SET rideRequestId to newRideStatus in
-    // Drivers Parent node for that specific choosen driver
-    FirebaseDatabase.instance
-        .ref()
-        .child("drivers")
-        .child(chosenDriverId)
-        .child("newRideStatus")
-        .set(referenceRideRequest!.key);
+  Future<void> sendNotificationToDriverNow(String driverId) async {
+    await FirebaseDatabase.instance.ref().child("drivers").child(driverId).child("newRideStatus").set(referenceRideRequest!.key);
 
-    //automate the push notification service
-    FirebaseDatabase.instance
-        .ref()
-        .child("drivers")
-        .child(chosenDriverId)
-        .child("token")
-        .once()
-        .then((snap) {
-      if (snap.snapshot.value != null) {
-        String deviceRegistrationToken = snap.snapshot.value.toString();
-
-        //send Notification Now
-        AssistantMethods.sendNotificationToDriverNow(
-          deviceRegistrationToken,
-          referenceRideRequest!.key.toString(),
-          context,
-        );
-
-        Fluttertoast.showToast(msg: "Notification sent Successfully.");
-      } else {
-        Fluttertoast.showToast(msg: "Please choose another driver.");
-        return;
-      }
-    });
+    final DatabaseEvent event = await FirebaseDatabase.instance.ref().child("drivers").child(driverId).child("token").once();
+    if (event.snapshot.value != null && mounted) {
+      final String token = event.snapshot.value.toString();
+      await AssistantMethods.sendNotificationToDriverNow(token, referenceRideRequest!.key.toString(), context);
+      Fluttertoast.showToast(msg: "Notification sent successfully.");
+    } else {
+      Fluttertoast.showToast(msg: "Please choose another driver.");
+    }
   }
 
-  retrieveOnlineDriversInformation(List onlineNearestDriversList) async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref().child("drivers");
-    for (int i = 0; i < onlineNearestDriversList.length; i++) {
-      await ref
-          .child(onlineNearestDriversList[i].driverId.toString())
-          .once()
-          .then((dataSnapshot) {
-        Map driverKeyInfo = dataSnapshot.snapshot.value as Map;
-        List dNames = [];
-        if (dList.isNotEmpty) {
-          for (var info in dList) {
-            dNames.add(info["name"]);
-          }
-          if (!(dNames.contains(driverKeyInfo["name"]))) {
-            dList.add(driverKeyInfo);
-          }
-        } else {
-          dList.add(driverKeyInfo);
+  Future<void> retrieveOnlineDriversInformation(List<ActiveNearbyAvailableDrivers> driversList) async {
+    final DatabaseReference ref = FirebaseDatabase.instance.ref().child("drivers");
+    for (final driver in driversList) {
+      final DatabaseEvent event = await ref.child(driver.driverId.toString()).once();
+      final data = event.snapshot.value as Map?;
+      if (data != null) {
+        final List names = dList.map((e) => e["name"]).toList();
+        if (!names.contains(data["name"])) {
+          dList.add(data);
         }
-      });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     createActiveNearByDriverIconMarker();
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       key: sKey,
-      drawer: Container(
+      drawer: SizedBox(
         width: 265,
         child: Theme(
-          data: Theme.of(context).copyWith(
-            canvasColor: Colors.black,
-          ),
-          child: MyDrawer(
-            name: userName,
-            email: userEmail,
-          ),
+          data: Theme.of(context).copyWith(canvasColor: Colors.black),
+          child: MyDrawer(name: userName, email: userEmail),
         ),
       ),
       body: Stack(
@@ -659,19 +440,12 @@ class _MainScreenState extends State<MainScreen> {
             onMapCreated: (GoogleMapController controller) {
               _controllerGoogleMap.complete(controller);
               newGoogleMapController = controller;
-
-              //for black theme google map
               blackThemeGoogleMap();
-
-              setState(() {
-                bottomPaddingOfMap = 240;
-              });
-
+              setState(() => bottomPaddingOfMap = 240);
               locateUserPosition();
             },
           ),
 
-          //custom hamburger button for drawer
           Positioned(
             top: 30,
             left: 14,
@@ -680,21 +454,16 @@ class _MainScreenState extends State<MainScreen> {
                 if (openNavigationDrawer) {
                   sKey.currentState!.openDrawer();
                 } else {
-                  //restart-refresh-minimize app progmatically
                   MyApp.restartApp(context);
                 }
               },
               child: CircleAvatar(
                 backgroundColor: Colors.grey,
-                child: Icon(
-                  openNavigationDrawer ? Icons.menu : Icons.close,
-                  color: Colors.black54,
-                ),
+                child: Icon(openNavigationDrawer ? Icons.menu : Icons.close, color: Colors.black54),
               ),
             ),
           ),
 
-          //ui for searching location
           Positioned(
             bottom: 0,
             left: 0,
@@ -706,171 +475,93 @@ class _MainScreenState extends State<MainScreen> {
                 height: searchLocationContainerHeight,
                 decoration: const BoxDecoration(
                   color: Colors.black87,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(20),
-                    topLeft: Radius.circular(20),
-                  ),
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
                 ),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                   child: Column(
                     children: [
-                      //from
                       Row(
                         children: [
-                          const Icon(
-                            Icons.add_location_alt_outlined,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(
-                            width: 12.0,
-                          ),
+                          const Icon(Icons.add_location_alt_outlined, color: Colors.grey),
+                          const SizedBox(width: 12.0),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Text(localizations.from, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                               Text(
-                                AppLocalizations.of(context)!.from,
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                              Text(
-                                Provider.of<AppInfoHandler>(context)
-                                            .userPickUpLocation !=
-                                        null
-                                    ? (Provider.of<AppInfoHandler>(context)
-                                                .userPickUpLocation!
-                                                .locationName!)
-                                            .substring(0, 24) +
-                                        "..."
-                                    : AppLocalizations.of(context)!
-                                        .notGettingAddress,
-                                style: const TextStyle(
-                                    color: Colors.grey, fontSize: 14),
+                                Provider.of<AppInfoHandler>(context).userPickUpLocation != null
+                                    ? "${Provider.of<AppInfoHandler>(context).userPickUpLocation!.locationName!.substring(0, 24)}..."
+                                    : localizations.notGettingAddress,
+                                style: const TextStyle(color: Colors.grey, fontSize: 14),
                               ),
                             ],
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 10.0),
-
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: Colors.grey,
-                      ),
-
-                      const SizedBox(height: 16.0),
-
-                      //to
+                      const SizedBox(height: 10),
+                      const Divider(height: 1, thickness: 1, color: Colors.grey),
+                      const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () async {
-                          //go to search places screen
-                          var responseFromSearchScreen = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (c) => SearchPlacesScreen()));
-
-                          if (responseFromSearchScreen == "obtainedDropoff") {
-                            setState(() {
-                              openNavigationDrawer = false;
-                            });
-
-                            //draw routes - draw polyline
+                          final response = await Navigator.push(context, MaterialPageRoute(builder: (c) => const SearchPlacesScreen()));
+                          if (response == "obtainedDropoff") {
+                            setState(() => openNavigationDrawer = false);
                             await drawPolyLineFromOriginToDestination();
                           }
                         },
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.add_location_alt_outlined,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(
-                              width: 12.0,
-                            ),
+                            const Icon(Icons.add_location_alt_outlined, color: Colors.grey),
+                            const SizedBox(width: 12.0),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Text(localizations.to, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                                 Text(
-                                  AppLocalizations.of(context)!.to,
-                                  style: TextStyle(
-                                      color: Colors.grey, fontSize: 12),
-                                ),
-                                Text(
-                                  Provider.of<AppInfoHandler>(context)
-                                              .userDropOffLocation !=
-                                          null
-                                      ? Provider.of<AppInfoHandler>(context)
-                                          .userDropOffLocation!
-                                          .locationName!
-                                      : AppLocalizations.of(context)!.whereToGo,
-                                  style: const TextStyle(
-                                      color: Colors.grey, fontSize: 14),
+                                  Provider.of<AppInfoHandler>(context).userDropOffLocation != null
+                                      ? Provider.of<AppInfoHandler>(context).userDropOffLocation!.locationName!
+                                      : localizations.whereToGo,
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 10.0),
-
-                      const Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: Colors.grey,
-                      ),
-
-                      const SizedBox(height: 16.0),
+                      const SizedBox(height: 10),
+                      const Divider(height: 1, thickness: 1, color: Colors.grey),
+                      const SizedBox(height: 16),
                       TextField(
                         controller: txtPrice,
                         style: const TextStyle(color: Colors.grey),
                         decoration: InputDecoration(
-                          labelText: AppLocalizations.of(context)!.price,
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          hintStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 10,
-                          ),
-                          labelStyle: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
+                          labelText: localizations.price,
+                          enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                          focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
+                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 10),
+                          labelStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                       ),
+                      const SizedBox(height: 10),
                       ElevatedButton(
-                        child: Text(AppLocalizations.of(context)!.requestARide),
                         onPressed: () {
-                          // Navigator.push(context, CupertinoPageRoute(builder: (_)=>PaymentScreen()));
-                          if (Provider.of<AppInfoHandler>(context,
-                                      listen: false)
-                                  .userDropOffLocation !=
-                              null) {
+                          if (Provider.of<AppInfoHandler>(context, listen: false).userDropOffLocation != null) {
                             if (txtPrice.text.isNotEmpty) {
                               saveRideRequestInformation();
                             } else {
-                              showErrorSnackBar(
-                                context,
-                                AppLocalizations.of(context)!
-                                    .pleaseEnterYourPrice,
-                              );
+                              showErrorSnackBar(context, localizations.pleaseEnterYourPrice);
                             }
                           } else {
-                            Fluttertoast.showToast(
-                                msg: "Please select destination location");
+                            Fluttertoast.showToast(msg: "Please select destination location");
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.green,
-                            textStyle: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        child: Text(localizations.requestARide),
                       ),
                     ],
                   ),
@@ -879,7 +570,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
 
-          //ui for waiting response from driver
           Positioned(
             bottom: 0,
             left: 0,
@@ -888,35 +578,15 @@ class _MainScreenState extends State<MainScreen> {
               height: waitingResponseFromDriverContainerHeight,
               decoration: const BoxDecoration(
                 color: Colors.black87,
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(20),
-                  topLeft: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Center(
                   child: AnimatedTextKit(
                     animatedTexts: [
-                      FadeAnimatedText(
-                        AppLocalizations.of(context)!
-                            .waitingForResponseFromDriver,
-                        duration: const Duration(seconds: 6),
-                        textAlign: TextAlign.center,
-                        textStyle: const TextStyle(
-                            fontSize: 30.0,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      ScaleAnimatedText(
-                        AppLocalizations.of(context)!.pleaseWait,
-                        duration: const Duration(seconds: 10),
-                        textAlign: TextAlign.center,
-                        textStyle: const TextStyle(
-                            fontSize: 32.0,
-                            color: Colors.white,
-                            fontFamily: 'Canterbury'),
-                      ),
+                      FadeAnimatedText(localizations.waitingForResponseFromDriver, duration: const Duration(seconds: 6), textAlign: TextAlign.center, textStyle: const TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold)),
+                      ScaleAnimatedText(localizations.pleaseWait, duration: const Duration(seconds: 10), textAlign: TextAlign.center, textStyle: const TextStyle(fontSize: 32, color: Colors.white)),
                     ],
                   ),
                 ),
@@ -924,7 +594,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
 
-          //ui for displaying assigned driver information
           Positioned(
             bottom: 0,
             left: 0,
@@ -933,105 +602,29 @@ class _MainScreenState extends State<MainScreen> {
               height: assignedDriverInfoContainerHeight,
               decoration: const BoxDecoration(
                 color: Colors.black87,
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(20),
-                  topLeft: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20)),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //status of ride
-                    Center(
-                      child: Text(
-                        driverRideStatus,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white54,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 20.0,
-                    ),
-
-                    const Divider(
-                      height: 2,
-                      thickness: 2,
-                      color: Colors.white54,
-                    ),
-
-                    const SizedBox(
-                      height: 20.0,
-                    ),
-
-                    //driver vehicle details
-                    Text(
-                      driverCarDetails,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white54,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 2.0,
-                    ),
-
-                    //driver name
-                    Text(
-                      driverName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white54,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 20.0,
-                    ),
-
-                    const Divider(
-                      height: 2,
-                      thickness: 2,
-                      color: Colors.white54,
-                    ),
-
-                    const SizedBox(
-                      height: 20.0,
-                    ),
-
-                    //call driver button
+                    Center(child: Text(driverRideStatus, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white54))),
+                    const SizedBox(height: 20),
+                    const Divider(height: 2, thickness: 2, color: Colors.white54),
+                    const SizedBox(height: 20),
+                    Text(driverCarDetails, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Colors.white54)),
+                    const SizedBox(height: 2),
+                    Text(driverName, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white54)),
+                    const SizedBox(height: 20),
+                    const Divider(height: 2, thickness: 2, color: Colors.white54),
+                    const SizedBox(height: 20),
                     Center(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          callNumber(driverPhone);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.green,
-                        ),
-                        icon: const Icon(
-                          Icons.phone_android,
-                          color: Colors.black54,
-                          size: 22,
-                        ),
-                        label: Text(
-                          AppLocalizations.of(context)!.callDriver,
-                          style: TextStyle(
-                            color: Colors.black54,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        onPressed: () => callNumber(driverPhone),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.black54),
+                        icon: const Icon(Icons.phone_android, size: 22),
+                        label: Text(localizations.callDriver, style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -1045,52 +638,36 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> drawPolyLineFromOriginToDestination() async {
-    var originPosition =
-        Provider.of<AppInfoHandler>(context, listen: false).userPickUpLocation;
-    var destinationPosition =
-        Provider.of<AppInfoHandler>(context, listen: false).userDropOffLocation;
+    final appInfo = Provider.of<AppInfoHandler>(context, listen: false);
+    final originPosition = appInfo.userPickUpLocation;
+    final destinationPosition = appInfo.userDropOffLocation;
 
-    var originLatLng = LatLng(
-        originPosition!.locationLatitude!, originPosition.locationLongitude!);
-    var destinationLatLng = LatLng(destinationPosition!.locationLatitude!,
-        destinationPosition.locationLongitude!);
+    final originLatLng = LatLng(originPosition!.locationLatitude!, originPosition.locationLongitude!);
+    final destinationLatLng = LatLng(destinationPosition!.locationLatitude!, destinationPosition.locationLongitude!);
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => ProgressDialog(
-        message: AppLocalizations.of(context)!.pleaseWait,
-      ),
-    );
+    showDialog(context: context, builder: (c) => ProgressDialog(message: AppLocalizations.of(context)!.pleaseWait));
 
-    var directionDetailsInfo =
-        await AssistantMethods.obtainOriginToDestinationDirectionDetails(
-            originLatLng, destinationLatLng);
-    setState(() {
-      tripDirectionDetailsInfo = directionDetailsInfo;
-    });
-
+    final directionDetailsInfo = await AssistantMethods.obtainOriginToDestinationDirectionDetails(originLatLng, destinationLatLng);
+    if (!mounted) return;
+    
+    setState(() => tripDirectionDetailsInfo = directionDetailsInfo);
     Navigator.pop(context);
 
-    print("These are points = ");
-    print(directionDetailsInfo!.e_points);
+    if (directionDetailsInfo == null) return;
 
-    PolylinePoints pPoints = PolylinePoints();
-    List<PointLatLng> decodedPolyLinePointsResultList =
-        pPoints.decodePolyline(directionDetailsInfo.e_points!);
+    final PolylinePoints pPoints = PolylinePoints();
+    final List<PointLatLng> decodedPoints = pPoints.decodePolyline(directionDetailsInfo.ePoints!);
 
     pLineCoOrdinatesList.clear();
-
-    if (decodedPolyLinePointsResultList.isNotEmpty) {
-      decodedPolyLinePointsResultList.forEach((PointLatLng pointLatLng) {
-        pLineCoOrdinatesList
-            .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
-      });
+    if (decodedPoints.isNotEmpty) {
+      for (final point in decodedPoints) {
+        pLineCoOrdinatesList.add(LatLng(point.latitude, point.longitude));
+      }
     }
 
     polyLineSet.clear();
-
     setState(() {
-      Polyline polyline = Polyline(
+      polyLineSet.add(Polyline(
         color: Colors.purpleAccent,
         polylineId: const PolylineId("PolylineID"),
         jointType: JointType.round,
@@ -1098,173 +675,117 @@ class _MainScreenState extends State<MainScreen> {
         startCap: Cap.roundCap,
         endCap: Cap.roundCap,
         geodesic: true,
-      );
-
-      polyLineSet.add(polyline);
+      ));
     });
 
-    LatLngBounds boundsLatLng;
-    if (originLatLng.latitude > destinationLatLng.latitude &&
-        originLatLng.longitude > destinationLatLng.longitude) {
-      boundsLatLng =
-          LatLngBounds(southwest: destinationLatLng, northeast: originLatLng);
+    final LatLngBounds bounds;
+    if (originLatLng.latitude > destinationLatLng.latitude && originLatLng.longitude > destinationLatLng.longitude) {
+      bounds = LatLngBounds(southwest: destinationLatLng, northeast: originLatLng);
     } else if (originLatLng.longitude > destinationLatLng.longitude) {
-      boundsLatLng = LatLngBounds(
-        southwest: LatLng(originLatLng.latitude, destinationLatLng.longitude),
-        northeast: LatLng(destinationLatLng.latitude, originLatLng.longitude),
-      );
+      bounds = LatLngBounds(southwest: LatLng(originLatLng.latitude, destinationLatLng.longitude), northeast: LatLng(destinationLatLng.latitude, originLatLng.longitude));
     } else if (originLatLng.latitude > destinationLatLng.latitude) {
-      boundsLatLng = LatLngBounds(
-        southwest: LatLng(destinationLatLng.latitude, originLatLng.longitude),
-        northeast: LatLng(originLatLng.latitude, destinationLatLng.longitude),
-      );
+      bounds = LatLngBounds(southwest: LatLng(destinationLatLng.latitude, originLatLng.longitude), northeast: LatLng(originLatLng.latitude, destinationLatLng.longitude));
     } else {
-      boundsLatLng =
-          LatLngBounds(southwest: originLatLng, northeast: destinationLatLng);
+      bounds = LatLngBounds(southwest: originLatLng, northeast: destinationLatLng);
     }
 
-    newGoogleMapController!
-        .animateCamera(CameraUpdate.newLatLngBounds(boundsLatLng, 65));
-
-    Marker originMarker = Marker(
-      markerId: const MarkerId("originID"),
-      infoWindow:
-          InfoWindow(title: originPosition.locationName, snippet: "Origin"),
-      position: originLatLng,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
-    );
-
-    Marker destinationMarker = Marker(
-      markerId: const MarkerId("destinationID"),
-      infoWindow: InfoWindow(
-          title: destinationPosition.locationName, snippet: "Destination"),
-      position: destinationLatLng,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-    );
+    newGoogleMapController?.animateCamera(CameraUpdate.newLatLngBounds(bounds, 65));
 
     setState(() {
-      markersSet.add(originMarker);
-      markersSet.add(destinationMarker);
-    });
-
-    Circle originCircle = Circle(
-      circleId: const CircleId("originID"),
-      fillColor: Colors.green,
-      radius: 12,
-      strokeWidth: 3,
-      strokeColor: Colors.white,
-      center: originLatLng,
-    );
-
-    Circle destinationCircle = Circle(
-      circleId: const CircleId("destinationID"),
-      fillColor: Colors.red,
-      radius: 12,
-      strokeWidth: 3,
-      strokeColor: Colors.white,
-      center: destinationLatLng,
-    );
-
-    setState(() {
-      circlesSet.add(originCircle);
-      circlesSet.add(destinationCircle);
+      markersSet.add(Marker(
+        markerId: const MarkerId("originID"),
+        infoWindow: InfoWindow(title: originPosition.locationName, snippet: "Origin"),
+        position: originLatLng,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+      ));
+      markersSet.add(Marker(
+        markerId: const MarkerId("destinationID"),
+        infoWindow: InfoWindow(title: destinationPosition.locationName, snippet: "Destination"),
+        position: destinationLatLng,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      ));
+      circlesSet.add(Circle(
+        circleId: const CircleId("originID"),
+        fillColor: Colors.green,
+        radius: 12,
+        strokeWidth: 3,
+        strokeColor: Colors.white,
+        center: originLatLng,
+      ));
+      circlesSet.add(Circle(
+        circleId: const CircleId("destinationID"),
+        fillColor: Colors.red,
+        radius: 12,
+        strokeWidth: 3,
+        strokeColor: Colors.white,
+        center: destinationLatLng,
+      ));
     });
   }
 
-  initializeGeoFireListener() {
+  void initializeGeoFireListener() {
     Geofire.initialize("activeDrivers");
+    Geofire.queryAtLocation(userCurrentPosition!.latitude, userCurrentPosition!.longitude, 10)!.listen((map) {
+      if (map == null) return;
+      final callBack = map['callBack'];
 
-    Geofire.queryAtLocation(
-            userCurrentPosition!.latitude, userCurrentPosition!.longitude, 10)!
-        .listen((map) {
-      print(map);
-      if (map != null) {
-        var callBack = map['callBack'];
+      switch (callBack) {
+        case Geofire.onKeyEntered:
+          final activeDriver = ActiveNearbyAvailableDrivers(
+            locationLatitude: map['latitude'],
+            locationLongitude: map['longitude'],
+            driverId: map['key'],
+          );
+          GeoFireAssistant.activeNearbyAvailableDriversList.add(activeDriver);
+          if (activeNearbyDriverKeysLoaded) displayActiveDriversOnUsersMap();
+          break;
 
-        //latitude will be retrieved from map['latitude']
-        //longitude will be retrieved from map['longitude']
+        case Geofire.onKeyExited:
+          GeoFireAssistant.deleteOfflineDriverFromList(map['key']);
+          displayActiveDriversOnUsersMap();
+          break;
 
-        switch (callBack) {
-          //whenever any driver become active/online
-          case Geofire.onKeyEntered:
-            ActiveNearbyAvailableDrivers activeNearbyAvailableDriver =
-                ActiveNearbyAvailableDrivers();
-            activeNearbyAvailableDriver.locationLatitude = map['latitude'];
-            activeNearbyAvailableDriver.locationLongitude = map['longitude'];
-            activeNearbyAvailableDriver.driverId = map['key'];
-            GeoFireAssistant.activeNearbyAvailableDriversList
-                .add(activeNearbyAvailableDriver);
-            if (activeNearbyDriverKeysLoaded == true) {
-              displayActiveDriversOnUsersMap();
-            }
-            break;
+        case Geofire.onKeyMoved:
+          final activeDriver = ActiveNearbyAvailableDrivers(
+            locationLatitude: map['latitude'],
+            locationLongitude: map['longitude'],
+            driverId: map['key'],
+          );
+          GeoFireAssistant.updateActiveNearbyAvailableDriverLocation(activeDriver);
+          displayActiveDriversOnUsersMap();
+          break;
 
-          //whenever any driver become non-active/offline
-          case Geofire.onKeyExited:
-            GeoFireAssistant.deleteOfflineDriverFromList(map['key']);
-            displayActiveDriversOnUsersMap();
-            break;
-
-          //whenever driver moves - update driver location
-          case Geofire.onKeyMoved:
-            ActiveNearbyAvailableDrivers activeNearbyAvailableDriver =
-                ActiveNearbyAvailableDrivers();
-            activeNearbyAvailableDriver.locationLatitude = map['latitude'];
-            activeNearbyAvailableDriver.locationLongitude = map['longitude'];
-            activeNearbyAvailableDriver.driverId = map['key'];
-            GeoFireAssistant.updateActiveNearbyAvailableDriverLocation(
-                activeNearbyAvailableDriver);
-            displayActiveDriversOnUsersMap();
-            break;
-
-          //display those online/active drivers on user's map
-          case Geofire.onGeoQueryReady:
-            activeNearbyDriverKeysLoaded = true;
-            displayActiveDriversOnUsersMap();
-            break;
-        }
+        case Geofire.onGeoQueryReady:
+          activeNearbyDriverKeysLoaded = true;
+          displayActiveDriversOnUsersMap();
+          break;
       }
-
-      setState(() {});
+      if (mounted) setState(() {});
     });
   }
 
-  displayActiveDriversOnUsersMap() {
+  void displayActiveDriversOnUsersMap() {
     setState(() {
       markersSet.clear();
-      circlesSet.clear();
+      final Set<Marker> driversMarkerSet = {};
 
-      Set<Marker> driversMarkerSet = Set<Marker>();
-
-      for (ActiveNearbyAvailableDrivers eachDriver
-          in GeoFireAssistant.activeNearbyAvailableDriversList) {
-        LatLng eachDriverActivePosition =
-            LatLng(eachDriver.locationLatitude!, eachDriver.locationLongitude!);
-
-        Marker marker = Marker(
-          markerId: MarkerId("driver" + eachDriver.driverId!),
-          position: eachDriverActivePosition,
-          icon: activeNearbyIcon!,
+      for (final driver in GeoFireAssistant.activeNearbyAvailableDriversList) {
+        driversMarkerSet.add(Marker(
+          markerId: MarkerId("driver${driver.driverId}"),
+          position: LatLng(driver.locationLatitude!, driver.locationLongitude!),
+          icon: activeNearbyIcon ?? BitmapDescriptor.defaultMarker,
           rotation: 360,
-        );
-
-        driversMarkerSet.add(marker);
+        ));
       }
-
-      setState(() {
-        markersSet = driversMarkerSet;
-      });
+      markersSet.addAll(driversMarkerSet);
     });
   }
 
-  createActiveNearByDriverIconMarker() {
-    if (activeNearbyIcon == null) {
-      ImageConfiguration imageConfiguration =
-          createLocalImageConfiguration(context, size: const Size(2, 2));
-      BitmapDescriptor.fromAssetImage(
-              imageConfiguration, "assets/images/mapCar.png")
-          .then((value) {
-        activeNearbyIcon = value;
+  void createActiveNearByDriverIconMarker() {
+    if (activeNearbyIcon == null && mounted) {
+      const config = ImageConfiguration(size: Size(2, 2));
+      BitmapDescriptor.fromAssetImage(config, "assets/images/mapCar.png").then((value) {
+        if (mounted) setState(() => activeNearbyIcon = value);
       });
     }
   }

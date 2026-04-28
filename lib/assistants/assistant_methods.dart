@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,23 +15,21 @@ import '../models/directions.dart';
 import '../models/trips_history_model.dart';
 import '../models/user_model.dart';
 
-class AssistantMethods
-{
-  static Future<String> searchAddressForGeographicCoOrdinates(Position position, context) async
-  {
-    String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapKey";
-    String humanReadableAddress="";
+class AssistantMethods {
+  static Future<String> searchAddressForGeographicCoOrdinates(Position position, context) async {
+    final String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$mapKey";
+    String humanReadableAddress = "";
 
-    var requestResponse = await RequestAssistant.receiveRequest(apiUrl);
+    final requestResponse = await RequestAssistant.receiveRequest(apiUrl);
 
-    if(requestResponse != "Error Occurred, Failed. No Response.")
-    {
+    if (requestResponse is Map && requestResponse["results"] != null && requestResponse["results"].isNotEmpty) {
       humanReadableAddress = requestResponse["results"][0]["formatted_address"];
 
-      Directions userPickUpAddress = Directions();
-      userPickUpAddress.locationLatitude = position.latitude;
-      userPickUpAddress.locationLongitude = position.longitude;
-      userPickUpAddress.locationName = humanReadableAddress;
+      final Directions userPickUpAddress = Directions(
+        locationLatitude: position.latitude,
+        locationLongitude: position.longitude,
+        locationName: humanReadableAddress,
+      );
 
       Provider.of<AppInfoHandler>(context, listen: false).updatePickUpLocationAddress(userPickUpAddress);
     }
@@ -40,153 +37,132 @@ class AssistantMethods
     return humanReadableAddress;
   }
 
-  static void readCurrentOnlineUserInfo() async
-  {
-
+  static Future<void> readCurrentOnlineUserInfo() async {
     currentFirebaseUser = fAuth.currentUser;
-    DatabaseReference userRef = FirebaseDatabase.instance
+    if (currentFirebaseUser == null) return;
+
+    final DatabaseReference userRef = FirebaseDatabase.instance
         .ref()
         .child("users")
         .child(currentFirebaseUser!.uid);
-    await userRef.once().then((snap)
-    {
-      if(snap.snapshot.value != null)
-      {
-       userModelCurrentInfo = UserModel.fromSnapshot(snap.snapshot);
-      }
-    });
+    
+    final DatabaseEvent event = await userRef.once();
+    if (event.snapshot.value != null) {
+      userModelCurrentInfo = UserModel.fromSnapshot(event.snapshot);
+    }
   }
 
-  static Future<DirectionDetailsInfo?> obtainOriginToDestinationDirectionDetails(LatLng origionPosition, LatLng destinationPosition) async
-  {
-    String urlOriginToDestinationDirectionDetails = "https://maps.googleapis.com/maps/api/directions/json?origin=${origionPosition.latitude},${origionPosition.longitude}&destination=${destinationPosition.latitude},${destinationPosition.longitude}&key=$mapKey";
+  static Future<DirectionDetailsInfo?> obtainOriginToDestinationDirectionDetails(LatLng originPosition, LatLng destinationPosition) async {
+    final String url = "https://maps.googleapis.com/maps/api/directions/json?origin=${originPosition.latitude},${originPosition.longitude}&destination=${destinationPosition.latitude},${destinationPosition.longitude}&key=$mapKey";
 
-    var responseDirectionApi = await RequestAssistant.receiveRequest(urlOriginToDestinationDirectionDetails);
+    final response = await RequestAssistant.receiveRequest(url);
 
-    if(responseDirectionApi == "Error Occurred, Failed. No Response.")
-    {
+    if (response is String || response == null) {
       return null;
     }
 
-    DirectionDetailsInfo directionDetailsInfo = DirectionDetailsInfo();
-    directionDetailsInfo.e_points = responseDirectionApi["routes"][0]["overview_polyline"]["points"];
+    final route = response["routes"][0];
+    final leg = route["legs"][0];
 
-    directionDetailsInfo.distance_text = responseDirectionApi["routes"][0]["legs"][0]["distance"]["text"];
-    directionDetailsInfo.distance_value = responseDirectionApi["routes"][0]["legs"][0]["distance"]["value"];
-
-    directionDetailsInfo.duration_text = responseDirectionApi["routes"][0]["legs"][0]["duration"]["text"];
-    directionDetailsInfo.duration_value = responseDirectionApi["routes"][0]["legs"][0]["duration"]["value"];
-
-    return directionDetailsInfo;
+    return DirectionDetailsInfo(
+      ePoints: route["overview_polyline"]["points"],
+      distanceText: leg["distance"]["text"],
+      distanceValue: leg["distance"]["value"],
+      durationText: leg["duration"]["text"],
+      durationValue: leg["duration"]["value"],
+    );
   }
 
-  static double calculateFareAmountFromOriginToDestination(DirectionDetailsInfo directionDetailsInfo)
-  {
-    double timeTraveledFareAmountPerMinute = (directionDetailsInfo.duration_value! / 60) * 0.1;
-    double distanceTraveledFareAmountPerKilometer = (directionDetailsInfo.duration_value! / 1000) * 0.1;
+  static double calculateFareAmountFromOriginToDestination(DirectionDetailsInfo directionDetailsInfo) {
+    final double timeTraveledFareAmountPerMinute = (directionDetailsInfo.durationValue! / 60) * 0.1;
+    final double distanceTraveledFareAmountPerKilometer = (directionDetailsInfo.durationValue! / 1000) * 0.1;
 
-    //USD
-    double totalFareAmount = timeTraveledFareAmountPerMinute + distanceTraveledFareAmountPerKilometer;
+    // USD
+    final double totalFareAmount = timeTraveledFareAmountPerMinute + distanceTraveledFareAmountPerKilometer;
 
     return double.parse(totalFareAmount.toStringAsFixed(1));
   }
 
-  static sendNotificationToDriverNow(String deviceRegistrationToken, String userRideRequestId, context) async
-  {
-    String destinationAddress = userDropOffAddress;
-    //or you can read it from provider;
+  static Future<void> sendNotificationToDriverNow(String deviceRegistrationToken, String userRideRequestId, context) async {
+    final String destinationAddress = userDropOffAddress;
 
-    Map<String, String> headerNotification =
-    {
+    final Map<String, String> headerNotification = {
       'Content-Type': 'application/json',
       'Authorization': cloudMessagingServerToken,
     };
 
-    Map bodyNotification =
-    {
-      "body":"Destination Address: \n$destinationAddress.",
-      "title":"New Trip Request"
+    final Map bodyNotification = {
+      "body": "Destination Address: \n$destinationAddress.",
+      "title": "New Trip Request"
     };
 
-    Map dataMap =
-    {
+    final Map dataMap = {
       "click_action": "FLUTTER_NOTIFICATION_CLICK",
       "id": "1",
       "status": "done",
       "rideRequestId": userRideRequestId
     };
 
-    Map officialNotificationFormat =
-    {
+    final Map officialNotificationFormat = {
       "notification": bodyNotification,
       "data": dataMap,
       "priority": "high",
       "to": deviceRegistrationToken,
     };
     
-    var responseNotification = http.post(
+    await http.post(
       Uri.parse("https://fcm.googleapis.com/fcm/send"),
       headers: headerNotification,
       body: jsonEncode(officialNotificationFormat),
     );
   }
 
+  static Future<void> readTripsKeysForOnlineUser(context) async {
+    if (userModelCurrentInfo == null) return;
 
-  //retrieve the trips KEYS for online user
-  //trip key = ride request key
-  static void readTripsKeysForOnlineUser(context)
-  {
-    print(userModelCurrentInfo!.name.toString()+" is the beautiful name of karim");
-
-    FirebaseDatabase.instance.ref()
+    final DatabaseEvent event = await FirebaseDatabase.instance.ref()
         .child("All Ride Requests")
         .orderByChild("userName")
         .equalTo(userModelCurrentInfo!.name)
-        .once()
-        .then((snap)
-    {
-      if(snap.snapshot.value != null)
-      {
-        Map keysTripsId = snap.snapshot.value as Map;
+        .once();
 
-        //count total number trips and share it with Provider
-        int overAllTripsCounter = keysTripsId.length;
-        Provider.of<AppInfoHandler>(context, listen: false).updateOverAllTripsCounter(overAllTripsCounter);
+    if (event.snapshot.value != null) {
+      final Map keysTripsId = event.snapshot.value as Map;
 
-        //share trips keys with Provider
-        List<String> tripsKeysList = [];
-        keysTripsId.forEach((key, value)
-        {
-          tripsKeysList.add(key);
-        });
-        Provider.of<AppInfoHandler>(context, listen: false).updateOverAllTripsKeys(tripsKeysList);
+      // Count total number trips and share it with Provider
+      final int overAllTripsCounter = keysTripsId.length;
+      Provider.of<AppInfoHandler>(context, listen: false).updateOverAllTripsCounter(overAllTripsCounter);
 
-        //get trips keys data - read trips complete information
-        readTripsHistoryInformation(context);
-      }
-    });
+      // Share trips keys with Provider
+      final List<String> tripsKeysList = keysTripsId.keys.cast<String>().toList();
+      Provider.of<AppInfoHandler>(context, listen: false).updateOverAllTripsKeys(tripsKeysList);
+
+      // Get trips keys data
+      await readTripsHistoryInformation(context);
+    }
   }
 
-  static void readTripsHistoryInformation(context)
-  {
-    var tripsAllKeys = Provider.of<AppInfoHandler>(context, listen: false).historyTripsKeysList;
+  static Future<void> readTripsHistoryInformation(context) async {
+    final tripsAllKeys = Provider.of<AppInfoHandler>(context, listen: false).historyTripsKeysList;
     
-    for(String eachKey in tripsAllKeys)
-    {
-      FirebaseDatabase.instance.ref()
-          .child("All Ride Requests")
-          .child(eachKey)
-          .once()
-          .then((snap)
-      {
-        var eachTripHistory = TripsHistoryModel.fromSnapshot(snap.snapshot);
-
-        if((snap.snapshot.value as Map)["status"] == "ended")
-        {
-          //update-add each history to OverAllTrips History Data List
-          Provider.of<AppInfoHandler>(context, listen: false).updateOverAllTripsHistoryInformation(eachTripHistory);
-        }
-      });
+    final List<Future> futures = [];
+    for (String eachKey in tripsAllKeys) {
+      futures.add(
+        FirebaseDatabase.instance.ref()
+            .child("All Ride Requests")
+            .child(eachKey)
+            .once()
+            .then((event) {
+          if (event.snapshot.value != null) {
+            final eachTripHistory = TripsHistoryModel.fromSnapshot(event.snapshot);
+            final data = event.snapshot.value as Map;
+            if (data["status"] == "ended") {
+              Provider.of<AppInfoHandler>(context, listen: false).updateOverAllTripsHistoryInformation(eachTripHistory);
+            }
+          }
+        })
+      );
     }
+    await Future.wait(futures);
   }
 }

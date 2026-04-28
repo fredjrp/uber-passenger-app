@@ -1,31 +1,18 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-class RequestAssistant
-{
-  static Future<dynamic> receiveRequest(String url) async
-  {
-    http.Response httpResponse = await http.get(Uri.parse(url));
+class RequestAssistant {
+  static Future<dynamic> receiveRequest(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
 
-    try
-    {
-      if(httpResponse.statusCode == 200) //successful
-      {
-        String responseData = httpResponse.body; //json
-
-        var decodeResponseData = jsonDecode(responseData);
-
-        return decodeResponseData;
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return 'Error Occurred, Failed. Status Code: ${response.statusCode}';
       }
-      else
-      {
-        return "Error Occurred, Failed. No Response.";
-      }
-    }
-    catch(exp)
-    {
-      return "Error Occurred, Failed. No Response.";
+    } catch (e) {
+      return 'Error Occurred, Failed. Exception: ${e.toString()}';
     }
   }
 }
