@@ -1,11 +1,12 @@
+# Fully Modernized Codemagic configuration
 workflows:
   android-uber-build:
     name: Uber Passenger Android Build
     max_build_duration: 60
-    instance_type: mac_mini_m2 # High performance for heavy dependency projects
+    instance_type: mac_mini_m2
     environment:
       groups:
-        - firebase_credentials # Set this up in Codemagic UI
+        - firebase_credentials
       vars:
         PACKAGE_NAME: "com.fredjrp.uberpassenger"
       flutter: stable
@@ -18,21 +19,20 @@ workflows:
     scripts:
       - name: Set up Firebase Config
         script: | 
-          # Decodes your base64 encoded google-services.json
           echo $GOOGLE_SERVICES_JSON | base64 --decode > android/app/google-services.json
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-      - name: Install and Upgrade Dependencies
+      - name: Force Modern Dependencies
         script: |
-          # Resolves version pinning conflicts automatically
+          # This is the heavy lifter: it forces all packages to their latest null-safe versions
           flutter pub upgrade --major-versions
       - name: Flutter Clean
         script: |
           flutter clean
       - name: Build Android APK
         script: |
-          # The magic flag to support legacy packages like gen_lang
-          flutter build apk --release --no-sound-null-safety --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
+          # Removed the --no-sound-null-safety flag as it is no longer supported
+          flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk 
+      - build/app/outputs/flutter-apk/*.apk
