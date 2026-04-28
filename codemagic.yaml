@@ -1,14 +1,15 @@
+# Complete Codemagic configuration for Uber Passenger App
 workflows:
   android-uber-build:
     name: Uber Passenger Android Build
-    instance_type: mac_mini_m2 # High performance to save build minutes
     max_build_duration: 60
+    instance_type: mac_mini_m2 # High performance for heavy dependency projects
     environment:
       groups:
-        - firebase_credentials # Create this in Codemagic UI for your google-services.json
-        - map_tokens           # For your Mapbox/Google Maps keys
+        - firebase_credentials # Create this in Codemagic UI for GOOGLE_SERVICES_JSON
       vars:
-        PACKAGE_NAME: "com.example.uberuser" # Double check your actual ID in build.gradle
+        PACKAGE_NAME: "com.fredjrp.uberpassenger"
+        FLUTTER_VERSION: "stable"
       flutter: stable
     triggering:
       events:
@@ -19,20 +20,28 @@ workflows:
     scripts:
       - name: Set up Firebase Config
         script: | 
-          # This pulls the JSON you'll upload to Codemagic environment variables
+          # Decodes your base64 encoded google-services.json from environment variables
           echo $GOOGLE_SERVICES_JSON | base64 --decode > android/app/google-services.json
-      - name: Install dependencies
+      - name: Set up local.properties
         script: |
-          flutter packages pub get
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+      - name: Install and Upgrade Dependencies
+        script: |
+          # Automatically upgrades constraints to match the 2026 SDK requirements
+          flutter pub upgrade --major-versions
       - name: Flutter Clean
         script: |
           flutter clean
       - name: Build Android APK
         script: |
-          flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
+          # Using --no-sound-null-safety to support legacy packages like gen_lang
+          flutter build apk --release --no-sound-null-safety --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
     publishing:
       email:
         recipients:
-          - your-email@example.com
+          - your-email@example.com # Update with your actual email
+        notifying:
+          success: true
+          failure: true
