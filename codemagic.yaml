@@ -35,11 +35,4 @@ workflows:
           # The magic flag to support legacy packages like gen_lang
           flutter build apk --release --no-sound-null-safety --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
-    publishing:
-      email:
-        recipients:
-          - juniorokovagng@gmail.com # Change this to your email
-        notifying:
-          on_success: true
-          on_failure: true
+      - build/app/outputs/flutter-apk/*.apk 
