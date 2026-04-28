@@ -1,36 +1,38 @@
 workflows:
-  android-workflow:
-    name: Android Workflow
+  android-uber-build:
+    name: Uber Passenger Android Build
+    instance_type: mac_mini_m2 # High performance to save build minutes
     max_build_duration: 60
-    instance_type: mac_mini_m1
     environment:
       groups:
-        - mapbox_tokens # You should create this group in Codemagic UI
+        - firebase_credentials # Create this in Codemagic UI for your google-services.json
+        - map_tokens           # For your Mapbox/Google Maps keys
       vars:
-        PACKAGE_NAME: "com.eopeter.fluttermapboxnavigation.mvp"
+        PACKAGE_NAME: "com.fredjrp.uberpassenger" # Double check your actual ID in build.gradle
       flutter: stable
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
     scripts:
-      - name: Set up Mapbox tokens
+      - name: Set up Firebase Config
+        script: | 
+          # This pulls the JSON you'll upload to Codemagic environment variables
+          echo $GOOGLE_SERVICES_JSON | base64 --decode > android/app/google-services.json
+      - name: Install dependencies
         script: |
-          # Inject Mapbox Access Token into XML
-          cat > android/app/src/main/res/values/mapbox_access_token.xml <<EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources xmlns:tools="http://schemas.android.com/tools">
-              <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">$MAPBOX_ACCESS_TOKEN</string>
-          </resources>
-          EOF
-          
-          # Inject Mapbox Downloads Token into gradle.properties
-          echo "MAPBOX_DOWNLOADS_TOKEN=$MAPBOX_DOWNLOADS_TOKEN" >> android/gradle.properties
-      - name: Get Flutter packages
+          flutter packages pub get
+      - name: Flutter Clean
         script: |
-          flutter pub get
+          flutter clean
       - name: Build Android APK
         script: |
-          flutter build apk --release
+          flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
     publishing:
       email:
         recipients:
-          - user@example.com # Replace with your email
+          - your-email@example.com
