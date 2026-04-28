@@ -8,7 +8,7 @@ workflows:
         - firebase_credentials # Create this in Codemagic UI for your google-services.json
         - map_tokens           # For your Mapbox/Google Maps keys
       vars:
-        PACKAGE_NAME: "com.fredjrp.uberpassenger" # Double check your actual ID in build.gradle
+        PACKAGE_NAME: "com.example.uberuser" # Double check your actual ID in build.gradle
       flutter: stable
     triggering:
       events:
