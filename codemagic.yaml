@@ -1,4 +1,3 @@
-# Complete "Bulletproof" Codemagic configuration
 workflows:
   android-uber-build:
     name: Uber Passenger Android Build
@@ -6,7 +5,7 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       groups:
-        - firebase_credentials # Ensure GOOGLE_SERVICES_JSON is in this group
+        - firebase_credentials
       vars:
         PACKAGE_NAME: "com.fredjrp.uberpassenger"
       flutter: stable
@@ -23,23 +22,16 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-      - name: Generate and Upgrade Gradle Wrapper
-        script: |
-          # Navigate to android folder and use system-wide gradle 
-          # to create a fresh 8.4 wrapper if one is missing or old.
-          cd android
-          gradle wrapper --gradle-version 8.4
-          chmod +x gradlew
       - name: Force Modern Dependencies
         script: |
-          # Solves the 'intl' and 'null-safety' conflicts automatically
           flutter pub upgrade --major-versions
       - name: Flutter Clean
         script: |
           flutter clean
       - name: Build Android APK
         script: |
-          # Build using modern standards (no flags needed)
+          # We use the --no-pub flag because we already handled it,
+          # and we let Flutter's internal tools handle the Gradle sync.
           flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
