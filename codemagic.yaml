@@ -1,12 +1,12 @@
-# Complete Modernized Codemagic configuration for Uber Passenger App
+# Complete "Bulletproof" Codemagic configuration
 workflows:
   android-uber-build:
     name: Uber Passenger Android Build
     max_build_duration: 60
-    instance_type: mac_mini_m2 # High performance for heavy compilation
+    instance_type: mac_mini_m2
     environment:
       groups:
-        - firebase_credentials # Ensure GOOGLE_SERVICES_JSON is set here in UI
+        - firebase_credentials # Ensure GOOGLE_SERVICES_JSON is in this group
       vars:
         PACKAGE_NAME: "com.fredjrp.uberpassenger"
       flutter: stable
@@ -23,21 +23,23 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-      - name: Upgrade Gradle Wrapper
+      - name: Generate and Upgrade Gradle Wrapper
         script: |
-          # Fixes "Unsupported class file major version 61" (Java 17 compatibility)
+          # Navigate to android folder and use system-wide gradle 
+          # to create a fresh 8.4 wrapper if one is missing or old.
           cd android
-          ./gradlew wrapper --gradle-version 8.4
+          gradle wrapper --gradle-version 8.4
+          chmod +x gradlew
       - name: Force Modern Dependencies
         script: |
-          # Automatically resolves the 'intl' and 'null-safety' version conflicts
+          # Solves the 'intl' and 'null-safety' conflicts automatically
           flutter pub upgrade --major-versions
       - name: Flutter Clean
         script: |
           flutter clean
       - name: Build Android APK
         script: |
-          # Building with modern null-safety standards
+          # Build using modern standards (no flags needed)
           flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER}
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
