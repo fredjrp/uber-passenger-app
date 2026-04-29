@@ -20,12 +20,12 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-      - name: Install Dependencies
-        script: |
-          flutter pub get
       - name: Flutter Clean
         script: |
           flutter clean
+      - name: Install Dependencies
+        script: |
+          flutter pub get
       - name: Build Android APK
         script: |
           flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER} --no-tree-shake-icons
