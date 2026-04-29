@@ -17,7 +17,7 @@ def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '
 def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0'
 
 android {
-    namespace "com.example.uberuser.uber_user"
+    namespace "com.example.uberuser"
     compileSdk 35
 
     compileOptions {
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.uberuser.uber_user"
+        applicationId "com.example.uberuser"
         minSdk 23
         targetSdk 35
         versionCode flutterVersionCode.toInteger()
@@ -50,4 +50,6 @@ android {
 
 dependencies {
     implementation "androidx.multidex:multidex:2.0.1"
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "com.google.android.material:material:1.12.0"
 }

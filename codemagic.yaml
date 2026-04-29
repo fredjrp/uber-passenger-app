@@ -7,7 +7,7 @@ workflows:
       groups:
         - firebase_credentials
       vars:
-        PACKAGE_NAME: "com.fredjrp.uberpassenger"
+        PACKAGE_NAME: "com.example.uberuser"
       flutter: stable
     triggering:
       events:
