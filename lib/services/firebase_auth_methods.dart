@@ -80,7 +80,7 @@ class FirebaseAuthMethods {
       );
 
       if (loginResult.status == LoginStatus.success) {
-        final OAuthCredential credential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
+        final OAuthCredential credential = FacebookAuthProvider.credential(loginResult.accessToken!.tokenString);
         final UserCredential userCredential = await _auth.signInWithCredential(credential);
         final User? user = userCredential.user;
 

@@ -61,7 +61,7 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: ElevatedButton(
         onPressed: () {
-          getPlaceDirectionDetails(widget.predictedPlaces?.placeId, context);
+          getPlaceDirectionDetails(widget.predictedPlaces?.place_id, context);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white12,
@@ -79,13 +79,13 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.predictedPlaces?.mainText ?? "",
+                    widget.predictedPlaces?.main_text ?? "",
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    widget.predictedPlaces?.secondaryText ?? "",
+                    widget.predictedPlaces?.secondary_text ?? "",
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 12, color: Colors.white60),
                   ),
