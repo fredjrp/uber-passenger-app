@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:uber_user/assistants/request_assistant.dart';
 
 import '../global/global.dart';
-import '../global/map_key.dart';
 import '../infoHandler/app_info_handler.dart';
 import '../models/direction_details_info.dart';
 import '../models/directions.dart';

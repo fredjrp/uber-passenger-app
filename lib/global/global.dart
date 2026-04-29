@@ -14,6 +14,7 @@ User? currentFirebaseUser;
 // Stripe & FCM
 const String stripePublishKey = "YOUR_STRIPE_PUBLISHABLE_KEY";
 const String cloudMessagingServerToken = "YOUR_FCM_SERVER_KEY";
+const String mapKey = "AIzaSyC44gSbDxcLlBR29lCf2mbReFDccr-qpqY";
 
 // Stream Subscriptions
 StreamSubscription<Position>? streamSubscriptionPosition;
