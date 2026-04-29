@@ -6,7 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../global/global.dart';
 import '../splashScreen/splash_screen.dart';
 import '../widgets/progress_dialog.dart';
-import 'package:uber_user/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'login_screen.dart';
 
 class SignUpScreen extends StatefulWidget {

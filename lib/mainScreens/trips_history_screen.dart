@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../infoHandler/app_info_handler.dart';
 import '../widgets/history_design_ui.dart';
-import 'package:uber_user/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TripsHistoryScreen extends StatefulWidget {
   const TripsHistoryScreen({super.key});

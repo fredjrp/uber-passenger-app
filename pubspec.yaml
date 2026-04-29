@@ -65,6 +65,7 @@ dependencies:
 dependency_overrides:
   uuid: ^4.4.0
   rxdart: ^0.28.0
+  file: ^6.1.4
 
 
 dev_dependencies:

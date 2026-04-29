@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:uber_user/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import '../global/global.dart';
 
