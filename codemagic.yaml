@@ -16,19 +16,16 @@ workflows:
         - pattern: 'main'
           include: true
     scripts:
-
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
       - name: Flutter Clean
         script: |
-          rm -f android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+          rm -rf android/app/src/main/java/io/flutter/plugins/
           flutter clean
-      - name: Install Dependencies
-        script: |
-          flutter pub get
       - name: Build Android APK
         script: |
+          flutter pub get
           flutter build apk --release --build-name=1.0.${BUILD_NUMBER} --build-number=${BUILD_NUMBER} --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
