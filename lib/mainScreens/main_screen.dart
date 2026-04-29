@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:uber_user/mainScreens/rate_driver_screen.dart';
 import 'package:uber_user/mainScreens/search_places_screen.dart';
 import 'package:uber_user/mainScreens/select_nearest_active_driver_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uber_user/l10n/app_localizations.dart';
 
 import '../assistants/assistant_methods.dart';
 import '../assistants/geofire_assistant.dart';

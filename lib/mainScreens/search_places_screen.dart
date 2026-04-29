@@ -4,7 +4,7 @@ import '../assistants/request_assistant.dart';
 import '../global/map_key.dart';
 import '../models/predicted_places.dart';
 import '../widgets/place_prediction_tile.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uber_user/l10n/app_localizations.dart';
 
 class SearchPlacesScreen extends StatefulWidget {
   const SearchPlacesScreen({super.key});

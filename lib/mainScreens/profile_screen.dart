@@ -83,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   backgroundColor: Colors.white24,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(150, 45),
-                  shape: RoundedRectangleDimensions(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: const Text(
                   "Back",
