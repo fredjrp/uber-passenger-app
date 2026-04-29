@@ -5,7 +5,7 @@ import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 import 'package:uber_user/main.dart';
 
 import '../global/global.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uber_user/l10n/app_localizations.dart';
 
 class SelectNearestActiveDriversScreen extends StatefulWidget {
   final DatabaseReference? referenceRideRequest;

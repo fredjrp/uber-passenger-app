@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:uber_user/authentication/signup_screen.dart';
 import 'package:uber_user/services/firebase_auth_methods.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uber_user/l10n/app_localizations.dart';
 
 import '../global/global.dart';
 import '../splashScreen/splash_screen.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/trips_history_model.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uber_user/l10n/app_localizations.dart';
 
 class HistoryDesignUIWidget extends StatelessWidget {
   final TripsHistoryModel? tripsHistoryModel;

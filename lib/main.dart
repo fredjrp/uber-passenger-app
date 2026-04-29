@@ -7,7 +7,7 @@ import 'package:uber_user/splashScreen/splash_screen.dart';
 import 'global/global.dart';
 import 'infoHandler/app_info_handler.dart';
 import 'l10n/l10n.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:uber_user/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
