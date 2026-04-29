@@ -64,6 +64,7 @@ dependencies:
   flutter_stripe: ^11.1.0
 dependency_overrides:
   uuid: ^4.4.0
+  rxdart: ^0.28.0
 
 
 dev_dependencies:
